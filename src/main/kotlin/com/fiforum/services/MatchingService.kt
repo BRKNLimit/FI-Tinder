@@ -125,12 +125,12 @@ object MatchingService {
                 
                 // STEP 4: Icebreaker Missions
                 val teamMission = when {
-                    top1 in sportGroup || top2 in sportGroup -> "Find a booth with a physical activity and complete it as a team!"
-                    top1 in gamingGroup || top2 in gamingGroup -> "Find the retro-gaming stand and share your highest all-time highscore."
-                    top1 in foodGroup || top2 in foodGroup -> "Locate the nearest catering station and decide on the best snack of the day!"
-                    top1 in travelGroup || top2 in travelGroup -> "Find a map of the venue and point out where you'd like to travel next together."
-                    top1 in chillGroup || top2 in chillGroup -> "Find a quiet lounge area and discuss your favorite binge-watch recommendation."
-                    else -> "Find a booth using ${top1 ?: "new tech"} and ask the staff about their biggest challenge!"
+                    top1 in sportGroup || top2 in sportGroup -> "Wenn ihr den Rest eures Lebens nur noch eine einzige Sportart machen (oder schauen) dürftet, welche wäre es?"
+                    top1 in gamingGroup || top2 in gamingGroup -> "Welches Game hat euch in der Schulzeit oder im Studium bisher die meisten Stunden Schlaf gekostet?"
+                    top1 in foodGroup || top2 in foodGroup -> "Es ist 19 Uhr, ihr kommt platt aus dem Büro oder der Uni. Was ist euer absolutes 15-Minuten-Lebensretter-Rezept?"
+                    top1 in travelGroup || top2 in travelGroup -> "Sobald das erste richtige Vollzeitgehalt auf dem Konto ist: Welcher Trip steht ganz oben auf der Bucketlist?"
+                    top1 in chillGroup || top2 in chillGroup -> "Welche Serie könnt ihr immer wieder von vorne anfangen, ohne dass sie langweilig wird?"
+                    else -> "Welches Klischee über ITler oder BWLer erfüllt ihr zu 100 % und welches so gar nicht?"
                 }
 
                 val tId = TeamsTable.insert {
