@@ -142,6 +142,15 @@ fun HTML.waitingPage(name: String) {
 }
 
 fun HTML.teamPage(teamName: String, members: List<UserData>) {
+    // Identify shared interests (occurring more than once in the team)
+    val sharedHobby = members.groupingBy { it.hobby }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
+    val sharedTech = members.groupingBy { it.techInterest }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
+    val sharedTravel = members.groupingBy { it.travel }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
+    val sharedWork = members.groupingBy { it.workstyle }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
+    val sharedCoffee = members.groupingBy { it.coffeeTalk }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
+    val sharedAfter = members.groupingBy { it.afterWork }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
+    val sharedFuel = members.groupingBy { it.fuel }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
+
     layout("Your Team // Matchmaker") {
         div("container") {
             h1 { +"Dein Team" }
@@ -155,13 +164,27 @@ fun HTML.teamPage(teamName: String, members: List<UserData>) {
                             small { +"Firma: ${member.company}" } 
                         }
                         div {
-                            if (member.hobby.isNotBlank()) span("badge") { +member.hobby }
-                            if (member.techInterest.isNotBlank()) span("badge") { +member.techInterest }
-                            if (member.travel.isNotBlank()) span("badge") { +member.travel }
-                            if (member.workstyle.isNotBlank()) span("badge") { +member.workstyle }
-                            if (member.coffeeTalk.isNotBlank()) span("badge") { +member.coffeeTalk }
-                            if (member.afterWork.isNotBlank()) span("badge") { +member.afterWork }
-                            if (member.fuel.isNotBlank()) span("badge") { +member.fuel }
+                            if (member.hobby.isNotBlank()) {
+                                span("badge ${if (sharedHobby.contains(member.hobby)) "badge-matched" else ""}") { +member.hobby }
+                            }
+                            if (member.techInterest.isNotBlank()) {
+                                span("badge ${if (sharedTech.contains(member.techInterest)) "badge-matched" else ""}") { +member.techInterest }
+                            }
+                            if (member.travel.isNotBlank()) {
+                                span("badge ${if (sharedTravel.contains(member.travel)) "badge-matched" else ""}") { +member.travel }
+                            }
+                            if (member.workstyle.isNotBlank()) {
+                                span("badge ${if (sharedWork.contains(member.workstyle)) "badge-matched" else ""}") { +member.workstyle }
+                            }
+                            if (member.coffeeTalk.isNotBlank()) {
+                                span("badge ${if (sharedCoffee.contains(member.coffeeTalk)) "badge-matched" else ""}") { +member.coffeeTalk }
+                            }
+                            if (member.afterWork.isNotBlank()) {
+                                span("badge ${if (sharedAfter.contains(member.afterWork)) "badge-matched" else ""}") { +member.afterWork }
+                            }
+                            if (member.fuel.isNotBlank()) {
+                                span("badge ${if (sharedFuel.contains(member.fuel)) "badge-matched" else ""}") { +member.fuel }
+                            }
                         }
                     }
                 }

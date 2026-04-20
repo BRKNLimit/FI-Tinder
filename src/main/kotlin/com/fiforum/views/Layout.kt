@@ -92,13 +92,19 @@ fun HTML.layout(title: String, content: FlowContent.() -> Unit) {
                     }
                     .badge {
                         display: inline-block;
-                        border: 1px solid var(--accent);
-                        color: var(--accent);
+                        border: 1px solid var(--text-secondary);
+                        color: var(--text-secondary);
                         padding: 2px 8px;
                         font-size: 0.7rem;
                         text-transform: uppercase;
                         margin-right: 5px;
                         margin-bottom: 5px;
+                    }
+                    .badge-matched {
+                        border: 1px solid var(--accent);
+                        color: var(--accent);
+                        background: rgba(255, 0, 0, 0.1);
+                        font-weight: bold;
                     }
                     .spinner {
                         display: inline-block;
