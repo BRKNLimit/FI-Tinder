@@ -52,11 +52,19 @@ fun HTML.registrationPage() {
                     }
                 }
                 div("input-group") {
-                    label { +"Präferenz: Travel" }
+                    label { +"Dein Reiseziel" }
                     select { 
                         name = "travel"; required = true
                         option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
-                        option { +"Ja" }; option { +"Nein" } 
+                        option { +"Asien" }
+                        option { +"Nordamerika" }
+                        option { +"Australien" }
+                        option { +"Afrika" }
+                        option { +"Skandinavien" }
+                        option { +"Südamerika" }
+                        option { +"Hauptsache Warm" }
+                        option { +"Hauptsache Action" }
+                        option { +"Süd Europa" }
                     }
                 }
                 div("input-group") {
