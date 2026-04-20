@@ -44,9 +44,9 @@ fun HTML.registrationPage(isLaunched: Boolean = false) {
                     select {
                         name = "hobby"; required = true
                         option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
-                        option { +"Fußball" }; option { +"Kochen" }; option { +"Gaming" }
-                        option { +"Wandern" }; option { +"Lesen" }; option { +"Reisen" }
-                        option { +"Fotografie" }; option { +"Musik" }; option { +"Yoga" }; option { +"Malen" }
+                        option { +"Fußball" }; option { +"Wandern" }; option { +"Kochen" }; option { +"Gaming" }
+                        option { +"Lesen" }; option { +"Reisen" }; option { +"Fotografie" }; option { +"Musik" }
+                        option { +"Yoga" }; option { +"Malen" }; option { +"Gym / Fitness" }; option { +"Teamsport" }
                     }
                 }
                 div("input-group") {
@@ -54,9 +54,10 @@ fun HTML.registrationPage(isLaunched: Boolean = false) {
                     select {
                         name = "techInterest"; required = true
                         option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
-                        option { +"Kotlin" }; option { +"AI" }; option { +"Cloud" }
-                        option { +"Cyber Security" }; option { +"Blockchain" }; option { +"DevOps" }
-                        option { +"Frontend" }; option { +"Backend" }; option { +"Mobile" }; option { +"Data Science" }
+                        option { +"Programmieren" }; option { +"AI" }; option { +"Cloud" }
+                        option { +"Cyber Security" }; option { +"BlockChain" }; option { +"Devops" }
+                        option { +"Data Science" }; option { +"FinTech" }; option { +"Agile/Scrum" }
+                        option { +"Business Intelligence" }; option { +"UX/UI Design" }; option { +"Projektmanagement" }; option { +"E-Commerce" }
                     }
                 }
                 div("input-group") {
@@ -66,13 +67,16 @@ fun HTML.registrationPage(isLaunched: Boolean = false) {
                         option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
                         option { +"Asien" }
                         option { +"Nordamerika" }
+                        option { +"Südamerika" }
+                        option { +"Südeuropa" }
+                        option { +"Skandinavien" }
+                        option { +"Hauptsache warm" }
+                        option { +"Hauptsache Action" }
                         option { +"Australien" }
                         option { +"Afrika" }
-                        option { +"Skandinavien" }
-                        option { +"Südamerika" }
-                        option { +"Hauptsache Warm" }
-                        option { +"Hauptsache Action" }
-                        option { +"Süd Europa" }
+                        option { +"Städtetrip" }
+                        option { +"Roadtrip" }
+                        option { +"Balkonien" }
                     }
                 }
                 div("input-group") {
@@ -80,10 +84,11 @@ fun HTML.registrationPage(isLaunched: Boolean = false) {
                     select { 
                         name = "workstyle"; required = true
                         option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
-                        option { +"... Remote" }
-                        option { +"... im Office" }
-                        option { +"... möglichst früh" }
-                        option { +"... möglichst spät" }
+                        option { +"Remote" }
+                        option { +"im Office" }
+                        option { +"Hybrid" }
+                        option { +"möglichst früh" }
+                        option { +"möglichst spät" }
                     }
                 }
                 div("input-group") {
@@ -91,14 +96,15 @@ fun HTML.registrationPage(isLaunched: Boolean = false) {
                     select {
                         name = "coffeeTalk"; required = true
                         option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
-                        option { +"Tech-Gossip" }
-                        option { +"Börse & Krypto" }
-                        option { +"Sport-Ergebnisse" }
-                        option { +"Filme & Serien" }
-                        option { +"Haustiere & Alltag" }
+                        option { +"Filme und Serien" }
+                        option { +"Tech Gossip" }
+                        option { +"Krypto und Finanzen" }
+                        option { +"Sportergebnisse" }
+                        option { +"Haustier und Alltag" }
                         option { +"Urlaubspläne" }
                         option { +"Gaming News" }
                         option { +"Lokale Events" }
+                        option { +"Studium & Berufsschule" }
                     }
                 }
                 div("input-group") {
@@ -106,11 +112,13 @@ fun HTML.registrationPage(isLaunched: Boolean = false) {
                     select {
                         name = "afterWork"; required = true
                         option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
-                        option { +"Feierabend Bier" }
-                        option { +"Ab zum Sport" }
-                        option { +"Ab auf die Couch" }
+                        option { +"Feierabendbier" }
+                        option { +"ab zum Sport" }
+                        option { +"ab auf die Couch" }
                         option { +"Side Hustle" }
-                        option { +"Fancy Kochen" }
+                        option { +"Fancy kochen" }
+                        option { +"Freunde treffen" }
+                        option { +"Zocken" }
                     }
                 }
                 div("input-group") {
@@ -120,8 +128,10 @@ fun HTML.registrationPage(isLaunched: Boolean = false) {
                         option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
                         option { +"Kaffee" }
                         option { +"Energy Drinks" }
+                        option { +"Mate" }
+                        option { +"Spezi / Cola" }
                         option { +"Tee" }
-                        option { +"Wasser (Stay Hydrated)" }
+                        option { +"Wasser (stay hydrated)" }
                         option { +"Snacks" }
                     }
                 }

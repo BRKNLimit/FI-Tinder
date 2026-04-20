@@ -11,13 +11,13 @@ object AdminService {
 
     private val names = listOf("Lars", "Anna", "Ben", "Sophie", "Max", "Julia", "Tom", "Emma", "Felix", "Lena", "Moritz", "Klara", "Paul", "Marie", "Jonas", "Sarah", "Tim", "Lisa", "Niklas", "Laura")
     private val companies = listOf("Finanz Informatik", "FI-TS", "FI-SP", "Star Finanz", "inasys", "FINMAS")
-    private val hobbies = listOf("Fußball", "Kochen", "Gaming", "Wandern", "Lesen", "Reisen", "Fotografie", "Musik", "Yoga", "Malen")
-    private val techInterests = listOf("Kotlin", "AI", "Cloud", "Cyber Security", "Blockchain", "DevOps", "Frontend", "Backend", "Mobile", "Data Science")
-    private val travelOptions = listOf("Asien", "Nordamerika", "Australien", "Afrika", "Skandinavien", "Südamerika", "Hauptsache Warm", "Hauptsache Action", "Süd Europa")
-    private val coffeeTopics = listOf("Tech-Gossip", "Börse & Krypto", "Sport-Ergebnisse", "Filme & Serien", "Haustiere & Alltag", "Urlaubspläne", "Gaming News", "Lokale Events")
-    private val workstyleOptions = listOf("... Remote", "... im Office", "... möglichst früh", "... möglichst spät")
-    private val afterWorkOptions = listOf("Feierabend Bier", "Ab zum Sport", "Ab auf die Couch", "Side Hustle", "Fancy Kochen")
-    private val fuelOptions = listOf("Kaffee", "Energy Drinks", "Tee", "Wasser (Stay Hydrated)", "Snacks")
+    private val hobbies = listOf("Fußball", "Wandern", "Kochen", "Gaming", "Lesen", "Reisen", "Fotografie", "Musik", "Yoga", "Malen", "Gym / Fitness", "Teamsport")
+    private val techInterests = listOf("Programmieren", "AI", "Cloud", "Cyber Security", "BlockChain", "Devops", "Data Science", "FinTech", "Agile/Scrum", "Business Intelligence", "UX/UI Design", "Projektmanagement", "E-Commerce")
+    private val travelOptions = listOf("Asien", "Nordamerika", "Südamerika", "Südeuropa", "Skandinavien", "Hauptsache warm", "Hauptsache Action", "Australien", "Afrika", "Städtetrip", "Roadtrip", "Balkonien")
+    private val coffeeTopics = listOf("Filme und Serien", "Tech Gossip", "Krypto und Finanzen", "Sportergebnisse", "Haustier und Alltag", "Urlaubspläne", "Gaming News", "Lokale Events", "Studium & Berufsschule")
+    private val workstyleOptions = listOf("Remote", "im Office", "Hybrid", "möglichst früh", "möglichst spät")
+    private val afterWorkOptions = listOf("Feierabendbier", "ab zum Sport", "ab auf die Couch", "Side Hustle", "Fancy kochen", "Freunde treffen", "Zocken")
+    private val fuelOptions = listOf("Kaffee", "Energy Drinks", "Mate", "Spezi / Cola", "Tee", "Wasser (stay hydrated)", "Snacks")
     private val options = listOf("Ja", "Nein", "Manchmal", "Vielleicht")
 
     fun generateMockData(count: Int) {
