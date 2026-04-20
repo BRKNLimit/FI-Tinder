@@ -155,8 +155,13 @@ fun HTML.teamPage(teamName: String, members: List<UserData>) {
                             small { +"Firma: ${member.company}" } 
                         }
                         div {
-                            span("badge") { +member.hobby }
-                            span("badge") { +member.techInterest }
+                            if (member.hobby.isNotBlank()) span("badge") { +member.hobby }
+                            if (member.techInterest.isNotBlank()) span("badge") { +member.techInterest }
+                            if (member.travel.isNotBlank()) span("badge") { +member.travel }
+                            if (member.workstyle.isNotBlank()) span("badge") { +member.workstyle }
+                            if (member.coffeeTalk.isNotBlank()) span("badge") { +member.coffeeTalk }
+                            if (member.afterWork.isNotBlank()) span("badge") { +member.afterWork }
+                            if (member.fuel.isNotBlank()) span("badge") { +member.fuel }
                         }
                     }
                 }

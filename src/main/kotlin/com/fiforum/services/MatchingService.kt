@@ -97,8 +97,11 @@ object MatchingService {
 
             // Save results
             bestState.forEach { members ->
-                val interests = members.flatMap { listOf(it.hobby, it.techInterest) }.filter { it.isNotBlank() }
-                val frequencies = interests.groupingBy { it }.eachCount()
+                val allInterests = members.flatMap { 
+                    listOf(it.hobby, it.techInterest, it.travel, it.workstyle, it.coffeeTalk, it.afterWork, it.fuel) 
+                }.filter { it.isNotBlank() && !it.startsWith("...") }
+                
+                val frequencies = allInterests.groupingBy { it }.eachCount()
                 val topInterests = frequencies.entries.sortedByDescending { it.value }.take(2).map { it.key }
                 
                 val teamName = when {
