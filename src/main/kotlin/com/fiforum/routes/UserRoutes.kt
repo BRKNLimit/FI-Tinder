@@ -40,7 +40,7 @@ fun Route.userRoutes() {
         } else {
             val (nameOrTeam, waitingCount, members) = result
             if (members == null) {
-                call.respondHtml { waitingPage(nameOrTeam as String, waitingCount as Long) }
+                call.respondHtml { waitingPage(nameOrTeam as String, waitingCount as Long, emailAddr) }
             } else {
                 call.respondHtml { teamPage(nameOrTeam as String, members as List<UserData>) }
             }

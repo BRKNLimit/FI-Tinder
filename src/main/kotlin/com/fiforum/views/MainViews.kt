@@ -124,8 +124,14 @@ fun HTML.registrationPage() {
     }
 }
 
-fun HTML.waitingPage(name: String, waitingCount: Long) {
+fun HTML.waitingPage(name: String, waitingCount: Long, email: String) {
     layout("Waiting // Matchmaker") {
+        head {
+            meta {
+                httpEquiv = "refresh"
+                content = "3"
+            }
+        }
         div("container") {
             h1 { +"Hallo, $name" }
             p { +"Du bist registriert. Das Matching hat noch nicht begonnen." }
@@ -141,7 +147,7 @@ fun HTML.waitingPage(name: String, waitingCount: Long) {
             p {
                 small { +"Sobald der Admin den Prozess startet, erfährst du hier dein Team." }
             }
-            a(href = "/") { button { +"Refreshen" } }
+            a(href = "/myteam?email=$email") { button { +"Refreshen" } }
         }
     }
 }
