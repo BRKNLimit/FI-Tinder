@@ -20,6 +20,10 @@ fun Route.adminRoutes() {
             val userCount = Users.selectAll().count()
             val teamCount = TeamsTable.selectAll().count()
             
+            val allUsers = Users.selectAll().map {
+                UserData(it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel])
+            }
+
             val teamsWithMembers = if (MatchingService.isLaunched) {
                 TeamsTable.selectAll().map { teamRow ->
                     val teamId = teamRow[TeamsTable.id]
@@ -32,11 +36,17 @@ fun Route.adminRoutes() {
                 emptyList()
             }
             
-            Triple(userCount, teamCount, teamsWithMembers)
+            val result = object {
+                val uCount = userCount
+                val tCount = teamCount
+                val users = allUsers
+                val teams = teamsWithMembers
+            }
+            result
         }
         
         call.respondHtml { 
-            adminDashboard(data.first, data.second, MatchingService.isLaunched, data.third) 
+            adminDashboard(data.uCount, data.tCount, MatchingService.isLaunched, data.teams, data.users) 
         }
     }
 

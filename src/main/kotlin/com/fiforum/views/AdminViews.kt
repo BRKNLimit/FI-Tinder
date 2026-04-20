@@ -7,9 +7,47 @@ fun HTML.adminDashboard(
     userCount: Long, 
     teamCount: Long, 
     isLaunched: Boolean,
-    teams: List<Pair<String, List<UserData>>> = emptyList()
+    teams: List<Pair<String, List<UserData>>> = emptyList(),
+    allUsers: List<UserData> = emptyList()
 ) {
     layout("Admin X-Ray // Matchmaker") {
+        head {
+            script {
+                unsafe {
+                    raw("""
+                        const allUsers = ${allUsers.map { "{ name: '${it.name}', email: '${it.email}', company: '${it.company}', hobby: '${it.hobby}', tech: '${it.techInterest}', travel: '${it.travel}', work: '${it.workstyle}', coffee: '${it.coffeeTalk}', after: '${it.afterWork}', fuel: '${it.fuel}' }" }};
+                        
+                        function filterUsers() {
+                            const search = document.getElementById('userSearch').value.toLowerCase();
+                            const company = document.getElementById('companyFilter').value;
+                            const interest = document.getElementById('interestFilter').value;
+
+                            const filtered = allUsers.filter(u => {
+                                const matchesSearch = u.name.toLowerCase().includes(search) || u.email.toLowerCase().includes(search);
+                                const matchesCompany = company === "" || u.company === company;
+                                const matchesInterest = interest === "" || 
+                                    u.hobby === interest || u.tech === interest || u.travel === interest || 
+                                    u.work === interest || u.coffee === interest || u.after === interest || u.fuel === interest;
+                                
+                                return matchesSearch && matchesCompany && matchesInterest;
+                            });
+
+                            const container = document.getElementById('userListContainer');
+                            const countSpan = document.getElementById('filteredCount');
+                            countSpan.innerText = filtered.length;
+
+                            container.innerHTML = filtered.map(u => `
+                                <div class="card" style="margin-bottom: 5px; padding: 10px; font-size: 0.8rem;">
+                                    <b class="accent-text">${u.name}</b> (${u.company})<br/>
+                                    <small style="color: #888;">${u.email}</small><br/>
+                                    <small>${u.hobby} | ${u.tech} | ${u.travel}</small>
+                                </div>
+                            `).join('');
+                        }
+                    """)
+                }
+            }
+        }
         div("container") {
             h1 { +"Admin X-Ray" }
             div("card") {
@@ -29,6 +67,51 @@ fun HTML.adminDashboard(
                 }
                 form(action = "/admin/reset", method = FormMethod.post) {
                     button(type = ButtonType.submit) { +"Reset Database" }
+                }
+            }
+
+            h2 { +"User Filter" }
+            div("card") {
+                div("input-group") {
+                    label { +"Suche (Name/Email)" }
+                    input(type = InputType.text) { id = "userSearch"; onKeyUp = "filterUsers()"; placeholder = "Eingabe..." }
+                }
+                div("input-group") {
+                    label { +"Unternehmen" }
+                    select { 
+                        id = "companyFilter"; onChange = "filterUsers()"
+                        option { value = ""; +"Alle Unternehmen" }
+                        allUsers.map { it.company }.distinct().filter { it.isNotBlank() }.forEach {
+                            option { value = it; +it }
+                        }
+                    }
+                }
+                div("input-group") {
+                    label { +"Interesse / Merkmal" }
+                    select {
+                        id = "interestFilter"; onChange = "filterUsers()"
+                        option { value = ""; +"Alle Merkmale" }
+                        val allTraits = allUsers.flatMap { listOf(it.hobby, it.techInterest, it.travel, it.workstyle, it.coffeeTalk, it.afterWork, it.fuel) }.distinct().filter { it.isNotBlank() }.sorted()
+                        allTraits.forEach { trait ->
+                            option { value = trait; +trait }
+                        }
+                    }
+                }
+                p { +"Gefundene Personen: " ; span("accent-text") { id = "filteredCount"; +"${allUsers.size}" } }
+            }
+
+            div {
+                id = "userListContainer"
+                style = "margin-top: 20px; max-height: 400px; overflow-y: auto;"
+                allUsers.forEach { u ->
+                    div("card") {
+                        style = "margin-bottom: 5px; padding: 10px; font-size: 0.8rem;"
+                        b("accent-text") { +u.name } ; +" (${u.company})"
+                        br()
+                        small { style = "color: #888;"; +u.email }
+                        br()
+                        small { +"${u.hobby} | ${u.techInterest} | ${u.travel}" }
+                    }
                 }
             }
 
