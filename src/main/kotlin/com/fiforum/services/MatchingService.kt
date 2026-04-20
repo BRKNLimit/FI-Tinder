@@ -106,13 +106,11 @@ object MatchingService {
                 }.filter { it.isNotBlank() && !it.startsWith("...") }
                 
                 val frequencies = allInterests.groupingBy { it }.eachCount()
-                val topInterests = frequencies.entries.sortedByDescending { it.value }.take(2).map { it.key }
+                val sortedInterests = frequencies.entries.sortedByDescending { it.value }
+                val top1 = sortedInterests.getOrNull(0)?.key
+                val top2 = sortedInterests.getOrNull(1)?.key
                 
-                val teamName = when {
-                    topInterests.size >= 2 -> "Team ${topInterests[0]} & ${topInterests[1]}"
-                    topInterests.size == 1 -> "Team ${topInterests[0]}"
-                    else -> "Die Allrounder"
-                }
+                val teamName = generateCleverTeamName(top1, top2)
 
                 val tId = TeamsTable.insert {
                     it[name] = teamName
@@ -121,6 +119,43 @@ object MatchingService {
                 members.forEach { m -> Users.update({ Users.email eq m.email }) { it[teamId] = tId } }
             }
             isLaunched = true
+        }
+    }
+
+    private fun generateCleverTeamName(t1: String?, t2: String?): String {
+        if (t1 == null) return "Die Allrounder"
+        if (t2 == null) return "Project $t1"
+
+        val pair = if (t1 < t2) t1 to t2 else t2 to t1
+        
+        return when (pair) {
+            "AI" to "Gaming" -> "Neural Highscore Heroes"
+            "AI" to "Kotlin" -> "Null-Safe Intelligence"
+            "Backend" to "Kotlin" -> "The Robust Server-Side"
+            "Blockchain" to "Börse & Krypto" -> "The Decentralized Miners"
+            "Kaffee" to "Tech-Gossip" -> "Brewed Debugging Logic"
+            "Kochen" to "Fancy Kochen" -> "The Gourmet Architects"
+            "Fußball" to "Sport-Ergebnisse" -> "Pitch Analyst Squad"
+            "Gaming" to "Gaming News" -> "The Highscore Legends"
+            "Cloud" to "DevOps" -> "Automated Sky-Net"
+            "Cyber Security" to "Blockchain" -> "Immutable Guardians"
+            "Filme & Serien" to "Ab auf die Couch" -> "The Binge Protocol"
+            "Musik" to "After Work" -> "Sonic Chill-Out Zone"
+            "Gaming" to "Energy Drinks" -> "The Overclocked Gamers"
+            "Wandern" to "Hauptsache Action" -> "Summit Chasers"
+            "Lesen" to "Tee" -> "The Steeped Thinkers"
+            "Frontend" to "Design" -> "The Pixel Perfectionists"
+            
+            else -> {
+                val patterns = listOf(
+                    "The $t1 $t2 Collective",
+                    "Operation $t1-$t2",
+                    "Nexus of $t1 and $t2",
+                    "$t1 x $t2 Synergy",
+                    "The $t1 $t2 Alliance"
+                )
+                patterns.random()
+            }
         }
     }
 
