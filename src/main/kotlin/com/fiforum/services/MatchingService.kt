@@ -52,13 +52,11 @@ object MatchingService {
                     userHasAnyOverlap = true
                 }
             }
-            // Anti-Clique Rule: Penalize if a user has 0 overlaps with anyone else in the team
+            // Anti-Clique Rule: Massive penalty if a user has 0 overlaps with anyone else in the team
             if (!userHasAnyOverlap && members.size > 1) {
-                total -= 50
+                total -= 100 // Increased from 50 to be more decisive
             }
         }
-        // Since we iterate i and j, we counted each pair twice. Divide by 2 for pair scores, 
-        // but the anti-clique penalty is per user, so it's already "correctly" weighted relative to pairs.
         return total / 2 
     }
 
@@ -72,31 +70,37 @@ object MatchingService {
 
             if (allUsers.isEmpty()) return@transaction
 
-            // --- GLOBAL OPTIMIZATION ---
-            var bestState = initialGrouping(allUsers)
-            var bestScore = calculateGlobalScore(bestState)
+            // --- GLOBAL OPTIMIZATION (Simulated Annealing) ---
+            var bestGlobalState = initialGrouping(allUsers)
+            var bestGlobalScore = calculateGlobalScore(bestGlobalState)
 
-            repeat(10) { // 10 Random Restarts
+            repeat(15) { // 15 Random Restarts for broader search
                 var currentState = initialGrouping(allUsers)
                 var currentScore = calculateGlobalScore(currentState)
                 
-                repeat(5000) { // 5000 Iterations
+                var temperature = 100.0
+                val coolingRate = 0.9995
+                
+                repeat(10000) { // 10000 Iterations per restart
                     val nextState = mutateState(currentState)
                     val nextScore = calculateGlobalScore(nextState)
-                    if (nextScore > currentScore) {
+                    
+                    val delta = nextScore - currentScore
+                    if (delta > 0 || Random.nextDouble() < Math.exp(delta / temperature)) {
                         currentState = nextState
                         currentScore = nextScore
+                        
+                        if (currentScore > bestGlobalScore) {
+                            bestGlobalState = currentState.map { it.toList() }.map { it.toMutableList() }
+                            bestGlobalScore = currentScore
+                        }
                     }
-                }
-                
-                if (currentScore > bestScore) {
-                    bestState = currentState
-                    bestScore = currentScore
+                    temperature *= coolingRate
                 }
             }
 
             // Save results
-            bestState.forEach { members ->
+            bestGlobalState.forEach { members ->
                 val allInterests = members.flatMap { 
                     listOf(it.hobby, it.techInterest, it.travel, it.workstyle, it.coffeeTalk, it.afterWork, it.fuel) 
                 }.filter { it.isNotBlank() && !it.startsWith("...") }
