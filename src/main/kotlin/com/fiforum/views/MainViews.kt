@@ -132,13 +132,20 @@ fun HTML.registrationPage(isLaunched: Boolean = false) {
     }
 }
 
-fun HTML.waitingPage(name: String, waitingCount: Long, email: String) {
+fun HTML.waitingPage(name: String, waitingUsers: List<UserData>, email: String) {
     layout(
         title = "Waiting // Matchmaker",
         headContent = {
             meta {
                 httpEquiv = "refresh"
-                content = "3"
+                content = "5" // Increased to 5s to allow for visual appreciation
+            }
+            script {
+                unsafe {
+                    raw("""
+                        const waitingUsers = ${waitingUsers.map { "{ name: '${it.name}', company: '${it.company}', hobby: '${it.hobby}', tech: '${it.techInterest}', travel: '${it.travel}', work: '${it.workstyle}', coffee: '${it.coffeeTalk}', after: '${it.afterWork}', fuel: '${it.fuel}' }" }};
+                    """)
+                }
             }
         }
     ) {
@@ -147,15 +154,102 @@ fun HTML.waitingPage(name: String, waitingCount: Long, email: String) {
             p { +"Du bist registriert. Das Matching hat noch nicht begonnen." }
             
             div("card") {
-                p { +"Aktuell warten " ; span("accent-text") { +"$waitingCount" } ; +" andere Teilnehmer mit dir." }
+                style = "position: relative; height: 300px; overflow: hidden; background: #050505; border-style: solid; border-color: #222;"
+                canvas {
+                    id = "connectionCanvas"
+                    style = "width: 100%; height: 100%;"
+                }
+                div {
+                    style = "position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 5px; font-size: 0.6rem; color: var(--text-secondary);"
+                    +"Matching-Nodes: ${waitingUsers.size}"
+                }
+            }
+
+            script {
+                unsafe {
+                    raw("""
+                        const canvas = document.getElementById('connectionCanvas');
+                        const ctx = canvas.getContext('2d');
+                        let width, height;
+
+                        function resize() {
+                            width = canvas.offsetWidth;
+                            height = canvas.height = canvas.offsetHeight;
+                            canvas.width = width;
+                        }
+                        window.onresize = resize;
+                        resize();
+
+                        const particles = waitingUsers.map(u => ({
+                            ...u,
+                            x: Math.random() * width,
+                            y: Math.random() * height,
+                            vx: (Math.random() - 0.5) * 1.5,
+                            vy: (Math.random() - 0.5) * 1.5
+                        }));
+
+                        function draw() {
+                            ctx.clearRect(0, 0, width, height);
+                            
+                            // Draw connections
+                            for (let i = 0; i < particles.length; i++) {
+                                for (let j = i + 1; j < particles.length; j++) {
+                                    const p1 = particles[i];
+                                    const p2 = particles[j];
+                                    
+                                    let hasMatch = false;
+                                    let isSameCompany = p1.company === p2.company && p1.company !== '';
+                                    
+                                    if (isSameCompany || 
+                                        (p1.hobby === p2.hobby && p1.hobby !== '') ||
+                                        (p1.tech === p2.tech && p1.tech !== '') ||
+                                        (p1.travel === p2.travel && p1.travel !== '') ||
+                                        (p1.work === p2.work && p1.work !== '') ||
+                                        (p1.coffee === p2.coffee && p1.coffee !== '') ||
+                                        (p1.after === p2.after && p1.after !== '') ||
+                                        (p1.fuel === p2.fuel && p1.fuel !== '')) {
+                                        hasMatch = true;
+                                    }
+
+                                    if (hasMatch) {
+                                        const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                                        if (dist < 150) {
+                                            ctx.beginPath();
+                                            ctx.moveTo(p1.x, p1.y);
+                                            ctx.lineTo(p2.x, p2.y);
+                                            ctx.strokeStyle = isSameCompany ? 'rgba(255, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.2)';
+                                            ctx.lineWidth = isSameCompany ? 2 : 1;
+                                            ctx.stroke();
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Draw particles
+                            particles.forEach(p => {
+                                p.x += p.vx;
+                                p.y += p.vy;
+
+                                if (p.x < 0 || p.x > width) p.vx *= -1;
+                                if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                                ctx.beginPath();
+                                ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                                ctx.fillStyle = '#fff';
+                                ctx.fill();
+                            });
+
+                            requestAnimationFrame(draw);
+                        }
+                        draw();
+                    """)
+                }
             }
 
             div {
+                style = "margin-top: 20px;"
                 span("spinner")
-                span { +" Bitte warten..." }
-            }
-            p {
-                small { +"Sobald der Admin den Prozess startet, erfährst du hier dein Team." }
+                span { +" Verbindung wird hergestellt..." }
             }
             a(href = "/myteam?email=$email") { button { +"Refreshen" } }
         }

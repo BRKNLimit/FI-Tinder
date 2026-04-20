@@ -24,23 +24,25 @@ fun Route.userRoutes() {
 
             val teamId = userRow[Users.teamId]
             if (teamId == null || !MatchingService.isLaunched) {
-                val waitingCount = Users.selectAll().count() - 1 // Exclude current user
-                Triple(userRow[Users.name], waitingCount, null)
+                val waitingUsers = Users.select { Users.teamId.isNull() }.map {
+                    UserData(it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel])
+                }
+                Triple(userRow[Users.name], waitingUsers, null)
             } else {
                 val teamName = TeamsTable.select { TeamsTable.id eq teamId }.single()[TeamsTable.name]
                 val members = Users.select { Users.teamId eq teamId }.map {
                     UserData(it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel])
                 }
-                Triple(teamName, 0L, members)
+                Triple(teamName, emptyList<UserData>(), members)
             }
         }
 
         if (result == null) {
             call.respondRedirect("/")
         } else {
-            val (nameOrTeam, waitingCount, members) = result
+            val (nameOrTeam, waitingUsers, members) = result
             if (members == null) {
-                call.respondHtml { waitingPage(nameOrTeam as String, waitingCount as Long, emailAddr) }
+                call.respondHtml { waitingPage(nameOrTeam as String, waitingUsers as List<UserData>, emailAddr) }
             } else {
                 call.respondHtml { teamPage(nameOrTeam as String, members as List<UserData>) }
             }
