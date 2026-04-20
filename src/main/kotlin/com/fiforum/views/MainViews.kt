@@ -3,11 +3,19 @@ package com.fiforum.views
 import com.fiforum.models.UserData
 import kotlinx.html.*
 
-fun HTML.registrationPage() {
+fun HTML.registrationPage(isLaunched: Boolean = false) {
     layout("Registration // Matchmaker") {
         div("container") {
             h1 { +"Matchmaker" }
-            p { +"Tritt der Community bei und finde dein perfektes Team." }
+            if (isLaunched) {
+                div("card") {
+                    style = "border-color: var(--accent); margin-bottom: 20px;"
+                    h3("accent-text") { +"Spätanmelder-Modus" }
+                    p { +"Das offizielle Matching ist beendet. Du wirst automatisch einem passenden Team zugewiesen." }
+                }
+            } else {
+                p { +"Tritt der Community bei und finde dein perfektes Team." }
+            }
             
             form(action = "/register", method = FormMethod.post) {
                 div("input-group") {

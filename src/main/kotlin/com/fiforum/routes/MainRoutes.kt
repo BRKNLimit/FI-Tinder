@@ -1,5 +1,6 @@
 package com.fiforum.routes
 
+import com.fiforum.models.UserData
 import com.fiforum.models.Users
 import com.fiforum.services.MatchingService
 import com.fiforum.views.matchingFinishedGeneralPage
@@ -15,34 +16,45 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Route.mainRoutes() {
     get("/") {
-        if (MatchingService.isLaunched) {
-            call.respondHtml { matchingFinishedGeneralPage() }
-        } else {
-            call.respondHtml { registrationPage() }
-        }
+        call.respondHtml { registrationPage(MatchingService.isLaunched) }
     }
 
     post("/register") {
         val params = call.receiveParameters()
         val emailAddr = params["email"] ?: return@post call.respondRedirect("/")
         
-        if (!MatchingService.isLaunched) {
-            transaction {
-                val exists = Users.select { Users.email eq emailAddr }.count() > 0
-                if (!exists) {
-                    Users.insert {
-                        it[email] = emailAddr
-                        it[name] = params["name"] ?: "Anonymous"
-                        it[company] = params["company"] ?: ""
-                        it[hobby] = params["hobby"] ?: ""
-                        it[techInterest] = params["techInterest"] ?: ""
-                        it[travel] = params["travel"] ?: ""
-                        it[workstyle] = params["workstyle"] ?: ""
-                        it[coffeeTalk] = params["coffeeTalk"] ?: ""
-                        it[afterWork] = params["afterWork"] ?: ""
-                        it[popculture] = ""
-                        it[fuel] = params["fuel"] ?: ""
-                    }
+        transaction {
+            val exists = Users.select { Users.email eq emailAddr }.count() > 0
+            if (!exists) {
+                Users.insert {
+                    it[email] = emailAddr
+                    it[name] = params["name"] ?: "Anonymous"
+                    it[company] = params["company"] ?: ""
+                    it[hobby] = params["hobby"] ?: ""
+                    it[techInterest] = params["techInterest"] ?: ""
+                    it[travel] = params["travel"] ?: ""
+                    it[workstyle] = params["workstyle"] ?: ""
+                    it[coffeeTalk] = params["coffeeTalk"] ?: ""
+                    it[afterWork] = params["afterWork"] ?: ""
+                    it[popculture] = ""
+                    it[fuel] = params["fuel"] ?: ""
+                }
+                
+                if (MatchingService.isLaunched) {
+                    val latecomer = UserData(
+                        emailAddr, 
+                        params["name"] ?: "Anonymous",
+                        params["company"] ?: "",
+                        params["hobby"] ?: "",
+                        params["techInterest"] ?: "",
+                        params["travel"] ?: "",
+                        params["workstyle"] ?: "",
+                        params["coffeeTalk"] ?: "",
+                        params["afterWork"] ?: "",
+                        "",
+                        params["fuel"] ?: ""
+                    )
+                    MatchingService.assignLatecomer(latecomer)
                 }
             }
         }

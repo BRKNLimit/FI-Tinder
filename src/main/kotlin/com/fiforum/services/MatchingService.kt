@@ -124,6 +124,33 @@ object MatchingService {
         }
     }
 
+    fun assignLatecomer(latecomer: UserData): Int? {
+        return transaction {
+            val teams = TeamsTable.selectAll().map { it[TeamsTable.id] }
+            if (teams.isEmpty()) return@transaction null
+
+            val candidateTeams = teams.map { tId ->
+                val members = Users.select { Users.teamId eq tId }.map {
+                    UserData(it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel])
+                }
+                tId to members
+            }
+
+            // Prioritize teams of 4, then 5, etc.
+            val minSize = candidateTeams.minOf { it.second.size }
+            val smallestTeams = candidateTeams.filter { it.second.size == minSize }
+
+            val bestTeam = smallestTeams.maxByOrNull { (_, members) ->
+                calculateTeamScore(members + latecomer)
+            }
+
+            bestTeam?.let { (tId, _) ->
+                Users.update({ Users.email eq latecomer.email }) { it[teamId] = tId }
+                tId
+            }
+        }
+    }
+
     private fun initialGrouping(users: List<UserData>): List<List<UserData>> {
         val shuffled = users.shuffled()
         val teams = mutableListOf<MutableList<UserData>>()
