@@ -63,6 +63,10 @@ fun HTML.layout(title: String, content: FlowContent.() -> Unit) {
                         border-color: var(--accent);
                         outline: none;
                     }
+                    option {
+                        background: #111111;
+                        color: var(--text-primary);
+                    }
                     button {
                         background: var(--text-primary);
                         color: var(--bg-color);

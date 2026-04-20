@@ -25,7 +25,8 @@ fun HTML.registrationPage() {
                 div("input-group") {
                     label { +"Hobby" }
                     select {
-                        name = "hobby"
+                        name = "hobby"; required = true
+                        option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
                         option { +"Fußball" }; option { +"Kochen" }; option { +"Gaming" }
                         option { +"Wandern" }; option { +"Lesen" }; option { +"Reisen" }
                         option { +"Fotografie" }; option { +"Musik" }; option { +"Yoga" }; option { +"Malen" }
@@ -34,7 +35,8 @@ fun HTML.registrationPage() {
                 div("input-group") {
                     label { +"Tech-Interesse" }
                     select {
-                        name = "techInterest"
+                        name = "techInterest"; required = true
+                        option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
                         option { +"Kotlin" }; option { +"AI" }; option { +"Cloud" }
                         option { +"Cyber Security" }; option { +"Blockchain" }; option { +"DevOps" }
                         option { +"Frontend" }; option { +"Backend" }; option { +"Mobile" }; option { +"Data Science" }
@@ -42,11 +44,19 @@ fun HTML.registrationPage() {
                 }
                 div("input-group") {
                     label { +"Präferenz: Travel" }
-                    select { name = "travel"; option { +"Ja" }; option { +"Nein" } }
+                    select { 
+                        name = "travel"; required = true
+                        option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
+                        option { +"Ja" }; option { +"Nein" } 
+                    }
                 }
                 div("input-group") {
                     label { +"Präferenz: Workstyle" }
-                    select { name = "workstyle"; option { +"Remote" }; option { +"Office" }; option { +"Hybrid" } }
+                    select { 
+                        name = "workstyle"; required = true
+                        option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
+                        option { +"Remote" }; option { +"Office" }; option { +"Hybrid" } 
+                    }
                 }
                 
                 button(type = ButtonType.submit) { +"Registrieren" }
