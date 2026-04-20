@@ -497,6 +497,18 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                         :root {
                             --accent: $teamColor !important;
                         }
+                        .badge-description {
+                            font-family: 'VT323', monospace;
+                            font-size: 0.8rem;
+                            color: var(--accent);
+                            margin-top: 10px;
+                            min-height: 1.2rem;
+                            text-transform: uppercase;
+                        }
+                        .grid-cell:hover {
+                            background: rgba(255, 255, 255, 0.05);
+                            color: #fff !important;
+                        }
                     """)
                 }
             }
@@ -504,7 +516,28 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                 unsafe {
                     raw("""
                         const userEmail = '$currentUserEmail';
-                        
+                        const badgeInfo = {
+                            'ALPHA 10': 'Top 10% Early Bird - Einer der Ersten!',
+                            'BETA 50': 'Top 50% Explorer - Früh dabei.',
+                            'LATECOMER': 'Late joining reward.',
+                            'SYNERGY MASTER': '>4 gemeinsame Interessen im Team.',
+                            'UNICORN': 'Einzigartige Interessen-Kombi im Event.',
+                            'SOCIAL BUTTERFLY': 'Profil vollständig mit LinkedIn & Bio.',
+                            'DIVERSITY PRO': 'Team-Mix aus lauter versch. Firmen.',
+                            'HIVE MIND': 'Gleicher Workstyle im ganzen Team.',
+                            'FULL HOUSE': 'Perfekte Teamgröße von 5 Personen.',
+                            'NETWORK NODE': 'VCard eines Kollegen gespeichert.'
+                        };
+
+                        function showBadgeDesc(name) {
+                            const desc = badgeInfo[name] || "";
+                            document.getElementById('badgeDescText').innerText = desc;
+                        }
+
+                        function clearBadgeDesc() {
+                            document.getElementById('badgeDescText').innerText = "";
+                        }
+
                         function setupTeamWebSocket() {
                             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
                             const ws = new WebSocket(protocol + '//' + window.location.host + '/matching-ws');
@@ -681,14 +714,21 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                         div("id-card-back") {
                             div("grid-5x2") {
                                 badges.take(10).forEach { b ->
+                                    val bName = b.replace('_', ' ').uppercase()
                                     div("grid-cell") { 
                                         style = "color: var(--accent); font-weight: bold; font-size: 0.6rem;"
-                                        +b.replace('_', ' ').uppercase() 
+                                        onMouseOver = "showBadgeDesc('$bName')"
+                                        onMouseOut = "clearBadgeDesc()"
+                                        +bName
                                     }
                                 }
                                 repeat(10 - badges.size) {
                                     div("grid-cell") { +"." }
                                 }
+                            }
+                            div("badge-description") {
+                                id = "badgeDescText"
+                                +"Halt die Maus über ein Badge!"
                             }
                         }
                     }

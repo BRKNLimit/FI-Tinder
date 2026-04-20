@@ -55,8 +55,11 @@ fun Route.userRoutes() {
                     val allUsersSorted = Users.selectAll().orderBy(Users.joinedAt to SortOrder.ASC).map { it[Users.email] }
                     val userRank = allUsersSorted.indexOf(emailAddr) + 1
                     
-                    if (userRank <= totalUsers * 0.1 && totalUsers > 0) badges.add("alpha_10")
-                    if (userRank <= totalUsers * 0.5 && totalUsers > 0) badges.add("beta_50")
+                    if (userRank <= totalUsers * 0.1 && totalUsers > 0) {
+                        badges.add("alpha_10")
+                    } else if (userRank <= totalUsers * 0.5 && totalUsers > 0) {
+                        badges.add("beta_50")
+                    }
                     
                     // Latecomer check (This is an approximation based on current state)
                     // If matched as latecomer or joined after isLaunched was true
