@@ -642,13 +642,30 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
             p { +"Vernetze dich jetzt und finde deine Team-Kollegen!" }
             
             div("card") {
-                style = "border: 1px solid #333; margin-top: 20px; text-align: center;"
-                h3 { +"DIGITAL_ID_CARD" }
-                canvas {
-                    id = "idCardCanvas"
-                    width = "400"; height = "250"
-                    style = "max-width: 100%; height: auto; border: 1px solid #fff; margin-bottom: 15px;"
+                style = "border: 1px solid #333; margin-top: 20px; text-align: center; border-style: none;"
+                h3 { +"DIGITAL_ID_CARD (CLICK TO FLIP)" }
+                
+                div("id-card-perspective") {
+                    id = "idCardPerspective"
+                    onClick = "this.classList.toggle('flipped')"
+                    div("id-card-inner") {
+                        div("id-card-front") {
+                            canvas {
+                                id = "idCardCanvas"
+                                width = "400"; height = "250"
+                                style = "width: 100%; height: 100%;"
+                            }
+                        }
+                        div("id-card-back") {
+                            div("grid-2x5") {
+                                repeat(10) {
+                                    div("grid-cell") { +"." }
+                                }
+                            }
+                        }
+                    }
                 }
+                
                 button(type = ButtonType.button) {
                     onClick = "downloadIDCard()"
                     +"ID-CARD HERUNTERLADEN (.PNG)"

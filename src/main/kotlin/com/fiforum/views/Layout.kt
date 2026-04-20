@@ -158,6 +158,62 @@ fun HTML.layout(title: String, headContent: HEAD.() -> Unit = {}, content: FlowC
                         0% { top: -100px; }
                         100% { top: 100%; }
                     }
+
+                    /* Flip Card System */
+                    .id-card-perspective {
+                        perspective: 1000px;
+                        width: 400px;
+                        max-width: 100%;
+                        height: 250px;
+                        margin: 20px auto;
+                        cursor: pointer;
+                    }
+                    .id-card-inner {
+                        position: relative;
+                        width: 100%;
+                        height: 100%;
+                        text-align: center;
+                        transition: transform 0.6s;
+                        transform-style: preserve-3d;
+                    }
+                    .id-card-perspective.flipped .id-card-inner {
+                        transform: rotateY(180deg);
+                    }
+                    .id-card-front, .id-card-back {
+                        position: absolute;
+                        width: 100%;
+                        height: 100%;
+                        -webkit-backface-visibility: hidden;
+                        backface-visibility: hidden;
+                        border: 1px solid #fff;
+                        background: #000;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        box-sizing: border-box;
+                    }
+                    .id-card-back {
+                        transform: rotateY(180deg);
+                        flex-direction: column;
+                        padding: 15px;
+                    }
+                    .grid-2x5 {
+                        display: grid;
+                        grid-template-columns: repeat(2, 1fr);
+                        grid-template-rows: repeat(5, 1fr);
+                        width: 100%;
+                        height: 100%;
+                        border: 1px dotted #333;
+                    }
+                    .grid-cell {
+                        border: 0.5px dotted #333;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-family: 'VT323', monospace;
+                        color: #222;
+                        font-size: 0.8rem;
+                    }
                 """)
             }
         }
