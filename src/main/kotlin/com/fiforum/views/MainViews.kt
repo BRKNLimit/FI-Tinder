@@ -93,6 +93,18 @@ fun HTML.registrationPage() {
                         option { +"Lokale Events" }
                     }
                 }
+                div("input-group") {
+                    label { +"Mein perfektes After Work..." }
+                    select {
+                        name = "afterWork"; required = true
+                        option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
+                        option { +"Feierabend Bier" }
+                        option { +"Ab zum Sport" }
+                        option { +"Ab auf die Couch" }
+                        option { +"Side Hustle" }
+                        option { +"Fancy Kochen" }
+                    }
+                }
                 
                 button(type = ButtonType.submit) { +"Registrieren" }
             }
