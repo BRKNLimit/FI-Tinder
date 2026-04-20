@@ -13,17 +13,18 @@ object MatchingService {
 
     fun calculatePairScore(u1: UserData, u2: UserData): Int {
         var score = 0
-        if (u1.hobby == u2.hobby && u1.hobby.isNotBlank()) score += 20
-        if (u1.techInterest == u2.techInterest && u1.techInterest.isNotBlank()) score += 20
-        if (u1.travel == u2.travel && u1.travel.isNotBlank()) score += 10
-        if (u1.workstyle == u2.workstyle && u1.workstyle.isNotBlank()) score += 10
-        if (u1.coffeeTalk == u2.coffeeTalk && u1.coffeeTalk.isNotBlank()) score += 10
-        if (u1.afterWork == u2.afterWork && u1.afterWork.isNotBlank()) score += 10
+        // Synergy: +10 for tech/hobby, +5 for soft factors
+        if (u1.hobby == u2.hobby && u1.hobby.isNotBlank()) score += 10
+        if (u1.techInterest == u2.techInterest && u1.techInterest.isNotBlank()) score += 10
+        if (u1.travel == u2.travel && u1.travel.isNotBlank()) score += 5
+        if (u1.workstyle == u2.workstyle && u1.workstyle.isNotBlank()) score += 5
+        if (u1.coffeeTalk == u2.coffeeTalk && u1.coffeeTalk.isNotBlank()) score += 5
+        if (u1.afterWork == u2.afterWork && u1.afterWork.isNotBlank()) score += 5
         if (u1.popculture == u2.popculture && u1.popculture.isNotBlank()) score += 5
-        if (u1.fuel == u2.fuel && u1.fuel.isNotBlank()) score += 10
+        if (u1.fuel == u2.fuel && u1.fuel.isNotBlank()) score += 5
         
-        // MODERATED Penalty for same company (reduced to allow high-interest matches to still group up)
-        if (u1.company == u2.company && u1.company.isNotBlank()) score -= 25
+        // Hard Constraint: Massive penalty for same company
+        if (u1.company == u2.company && u1.company.isNotBlank()) score -= 100
         
         return score
     }
@@ -123,40 +124,10 @@ object MatchingService {
     }
 
     private fun generateCleverTeamName(t1: String?, t2: String?): String {
-        if (t1 == null) return "Die Allrounder"
-        if (t2 == null) return "Project $t1"
+        if (t1 == null) return "Team Allrounder"
+        if (t2 == null) return "Team $t1"
 
-        val pair = if (t1 < t2) t1 to t2 else t2 to t1
-        
-        return when (pair) {
-            "AI" to "Gaming" -> "Neural Highscore Heroes"
-            "AI" to "Kotlin" -> "Null-Safe Intelligence"
-            "Backend" to "Kotlin" -> "The Robust Server-Side"
-            "Blockchain" to "Börse & Krypto" -> "The Decentralized Miners"
-            "Kaffee" to "Tech-Gossip" -> "Brewed Debugging Logic"
-            "Kochen" to "Fancy Kochen" -> "The Gourmet Architects"
-            "Fußball" to "Sport-Ergebnisse" -> "Pitch Analyst Squad"
-            "Gaming" to "Gaming News" -> "The Highscore Legends"
-            "Cloud" to "DevOps" -> "Automated Sky-Net"
-            "Cyber Security" to "Blockchain" -> "Immutable Guardians"
-            "Filme & Serien" to "Ab auf die Couch" -> "The Binge Protocol"
-            "Musik" to "After Work" -> "Sonic Chill-Out Zone"
-            "Gaming" to "Energy Drinks" -> "The Overclocked Gamers"
-            "Wandern" to "Hauptsache Action" -> "Summit Chasers"
-            "Lesen" to "Tee" -> "The Steeped Thinkers"
-            "Frontend" to "Design" -> "The Pixel Perfectionists"
-            
-            else -> {
-                val patterns = listOf(
-                    "The $t1 $t2 Collective",
-                    "Operation $t1-$t2",
-                    "Nexus of $t1 and $t2",
-                    "$t1 x $t2 Synergy",
-                    "The $t1 $t2 Alliance"
-                )
-                patterns.random()
-            }
-        }
+        return "Team $t1 & $t2"
     }
 
     fun assignLatecomer(latecomer: UserData): Int? {

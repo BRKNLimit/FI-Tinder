@@ -25,6 +25,8 @@ fun HTML.adminDashboard(
                             const tech = document.getElementById('techFilter').value;
                             const travel = document.getElementById('travelFilter').value;
                             const fuel = document.getElementById('fuelFilter').value;
+                            const afterWork = document.getElementById('afterWorkFilter').value;
+                            const coffeeTalk = document.getElementById('coffeeTalkFilter').value;
 
                             const filtered = allUsers.filter(u => {
                                 const matchesSearch = u.name.toLowerCase().includes(search) || u.email.toLowerCase().includes(search);
@@ -33,8 +35,10 @@ fun HTML.adminDashboard(
                                 const matchesTech = tech === "" || u.tech === tech;
                                 const matchesTravel = travel === "" || u.travel === travel;
                                 const matchesFuel = fuel === "" || u.fuel === fuel;
+                                const matchesAfterWork = afterWork === "" || u.after === afterWork;
+                                const matchesCoffeeTalk = coffeeTalk === "" || u.coffee === coffeeTalk;
                                 
-                                return matchesSearch && matchesCompany && matchesHobby && matchesTech && matchesTravel && matchesFuel;
+                                return matchesSearch && matchesCompany && matchesHobby && matchesTech && matchesTravel && matchesFuel && matchesAfterWork && matchesCoffeeTalk;
                             });
 
                             const container = document.getElementById('userListContainer');
@@ -132,6 +136,26 @@ fun HTML.adminDashboard(
                         }
                     }
                 }
+                div("input-group") {
+                    label { +"After Work" }
+                    select { 
+                        id = "afterWorkFilter"; onChange = "filterUsers()"
+                        option { value = ""; +"Alle Aktivitäten" }
+                        allUsers.map { it.afterWork }.distinct().filter { it.isNotBlank() }.sorted().forEach {
+                            option { value = it; +it }
+                        }
+                    }
+                }
+                div("input-group") {
+                    label { +"Kaffeemaschine" }
+                    select { 
+                        id = "coffeeTalkFilter"; onChange = "filterUsers()"
+                        option { value = ""; +"Alle Themen" }
+                        allUsers.map { it.coffeeTalk }.distinct().filter { it.isNotBlank() }.sorted().forEach {
+                            option { value = it; +it }
+                        }
+                    }
+                }
                 p { +"Gefundene Personen: " ; span("accent-text") { id = "filteredCount"; +"${allUsers.size}" } }
             }
 
@@ -153,6 +177,14 @@ fun HTML.adminDashboard(
             if (isLaunched && teams.isNotEmpty()) {
                 h2 { +"Team Analyse" }
                 teams.forEach { (teamName, members) ->
+                    val sharedHobby = members.groupingBy { it.hobby }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
+                    val sharedTech = members.groupingBy { it.techInterest }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
+                    val sharedTravel = members.groupingBy { it.travel }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
+                    val sharedWork = members.groupingBy { it.workstyle }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
+                    val sharedCoffee = members.groupingBy { it.coffeeTalk }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
+                    val sharedAfter = members.groupingBy { it.afterWork }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
+                    val sharedFuel = members.groupingBy { it.fuel }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
+
                     div("card") {
                         h3("accent-text") { +teamName }
                         div {
@@ -161,9 +193,13 @@ fun HTML.adminDashboard(
                                     style = "margin-bottom: 10px; border-bottom: 1px dotted #333; padding-bottom: 5px;"
                                     b { +m.name } ; span { +" (${m.company})" }
                                     div {
-                                        small {
-                                            +"Hobby: ${m.hobby} | Tech: ${m.techInterest} | Reise: ${m.travel} | Work: ${m.workstyle} | Coffee: ${m.coffeeTalk} | After: ${m.afterWork} | Fuel: ${m.fuel}"
-                                        }
+                                        if (m.hobby.isNotBlank()) span("badge ${if (sharedHobby.contains(m.hobby)) "badge-matched" else ""}") { +m.hobby }
+                                        if (m.techInterest.isNotBlank()) span("badge ${if (sharedTech.contains(m.techInterest)) "badge-matched" else ""}") { +m.techInterest }
+                                        if (m.travel.isNotBlank()) span("badge ${if (sharedTravel.contains(m.travel)) "badge-matched" else ""}") { +m.travel }
+                                        if (m.workstyle.isNotBlank()) span("badge ${if (sharedWork.contains(m.workstyle)) "badge-matched" else ""}") { +m.workstyle }
+                                        if (m.coffeeTalk.isNotBlank()) span("badge ${if (sharedCoffee.contains(m.coffeeTalk)) "badge-matched" else ""}") { +m.coffeeTalk }
+                                        if (m.afterWork.isNotBlank()) span("badge ${if (sharedAfter.contains(m.afterWork)) "badge-matched" else ""}") { +m.afterWork }
+                                        if (m.fuel.isNotBlank()) span("badge ${if (sharedFuel.contains(m.fuel)) "badge-matched" else ""}") { +m.fuel }
                                     }
                                 }
                             }
