@@ -20,7 +20,16 @@ fun HTML.registrationPage() {
                 }
                 div("input-group") {
                     label { +"Unternehmen / Organisation" }
-                    input(type = InputType.text) { name = "company" }
+                    select {
+                        name = "company"; required = true
+                        option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
+                        option { +"Finanz Informatik" }
+                        option { +"FI-TS" }
+                        option { +"FI-SP" }
+                        option { +"Star Finanz" }
+                        option { +"inasys" }
+                        option { +"FINMAS" }
+                    }
                 }
                 div("input-group") {
                     label { +"Hobby" }

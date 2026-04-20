@@ -10,7 +10,7 @@ import kotlin.random.Random
 object AdminService {
 
     private val names = listOf("Lars", "Anna", "Ben", "Sophie", "Max", "Julia", "Tom", "Emma", "Felix", "Lena", "Moritz", "Klara", "Paul", "Marie", "Jonas", "Sarah", "Tim", "Lisa", "Niklas", "Laura")
-    private val companies = listOf("Google", "Microsoft", "Apple", "Amazon", "Meta", "Tesla", "SAP", "Siemens", "Volkswagen", "Bosch")
+    private val companies = listOf("Finanz Informatik", "FI-TS", "FI-SP", "Star Finanz", "inasys", "FINMAS")
     private val hobbies = listOf("Fußball", "Kochen", "Gaming", "Wandern", "Lesen", "Reisen", "Fotografie", "Musik", "Yoga", "Malen")
     private val techInterests = listOf("Kotlin", "AI", "Cloud", "Cyber Security", "Blockchain", "DevOps", "Frontend", "Backend", "Mobile", "Data Science")
     private val options = listOf("Ja", "Nein", "Manchmal", "Vielleicht")
