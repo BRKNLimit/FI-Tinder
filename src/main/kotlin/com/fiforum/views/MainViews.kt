@@ -180,68 +180,97 @@ fun HTML.waitingPage(name: String, waitingUsers: List<UserData>, email: String) 
                         window.onresize = resize;
                         resize();
 
-                        const particles = waitingUsers.map(u => ({
-                            ...u,
-                            x: Math.random() * width,
-                            y: Math.random() * height,
-                            vx: (Math.random() - 0.5) * 1.5,
-                            vy: (Math.random() - 0.5) * 1.5
-                        }));
+                        // Deterministic seed based on email
+                        function hashCode(str) {
+                            let hash = 0;
+                            for (let i = 0; i < str.length; i++) {
+                                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                                hash |= 0;
+                            }
+                            return Math.abs(hash);
+                        }
+
+                        const particles = waitingUsers.map(u => {
+                            const seed = hashCode(u.name + u.company);
+                            return {
+                                ...u,
+                                x: (seed % 1000) / 1000 * width,
+                                y: ((seed / 1000) % 1000) / 1000 * height,
+                                vx: 0,
+                                vy: 0,
+                                radius: 3
+                            };
+                        });
+
+                        function updatePositions() {
+                            // Simple Force-Directed Layout logic
+                            for (let i = 0; i < 50; i++) { // Run few iterations to stabilize
+                                particles.forEach((p1, idx1) => {
+                                    // Repulsion from other particles
+                                    particles.forEach((p2, idx2) => {
+                                        if (idx1 === idx2) return;
+                                        const dx = p1.x - p2.x;
+                                        const dy = p1.y - p2.y;
+                                        const dist = Math.hypot(dx, dy) || 1;
+                                        if (dist < 80) {
+                                            const force = (80 - dist) / 80 * 2;
+                                            p1.x += (dx / dist) * force;
+                                            p1.y += (dy / dist) * force;
+                                        }
+                                    });
+                                    // Repulsion from walls
+                                    const margin = 20;
+                                    if (p1.x < margin) p1.x += 2;
+                                    if (p1.x > width - margin) p1.x -= 2;
+                                    if (p1.y < margin) p1.y += 2;
+                                    if (p1.y > height - margin) p1.y -= 2;
+                                });
+                            }
+                        }
+                        updatePositions();
 
                         function draw() {
                             ctx.clearRect(0, 0, width, height);
                             
-                            // Draw connections
+                            // Draw static connections
                             for (let i = 0; i < particles.length; i++) {
                                 for (let j = i + 1; j < particles.length; j++) {
                                     const p1 = particles[i];
                                     const p2 = particles[j];
                                     
-                                    let hasMatch = false;
-                                    let isSameCompany = p1.company === p2.company && p1.company !== '';
-                                    
-                                    if (isSameCompany || 
-                                        (p1.hobby === p2.hobby && p1.hobby !== '') ||
+                                    const isSameCompany = p1.company === p2.company && p1.company !== '';
+                                    const hasInterestMatch = (p1.hobby === p2.hobby && p1.hobby !== '') ||
                                         (p1.tech === p2.tech && p1.tech !== '') ||
                                         (p1.travel === p2.travel && p1.travel !== '') ||
                                         (p1.work === p2.work && p1.work !== '') ||
                                         (p1.coffee === p2.coffee && p1.coffee !== '') ||
                                         (p1.after === p2.after && p1.after !== '') ||
-                                        (p1.fuel === p2.fuel && p1.fuel !== '')) {
-                                        hasMatch = true;
-                                    }
+                                        (p1.fuel === p2.fuel && p1.fuel !== '');
 
-                                    if (hasMatch) {
-                                        const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
-                                        if (dist < 150) {
-                                            ctx.beginPath();
-                                            ctx.moveTo(p1.x, p1.y);
-                                            ctx.lineTo(p2.x, p2.y);
-                                            ctx.strokeStyle = isSameCompany ? 'rgba(255, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.2)';
-                                            ctx.lineWidth = isSameCompany ? 2 : 1;
-                                            ctx.stroke();
-                                        }
+                                    if (isSameCompany || hasInterestMatch) {
+                                        ctx.beginPath();
+                                        ctx.moveTo(p1.x, p1.y);
+                                        ctx.lineTo(p2.x, p2.y);
+                                        // Permanent lines, no distance fade-out
+                                        ctx.strokeStyle = isSameCompany ? 'rgba(255, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.1)';
+                                        ctx.lineWidth = isSameCompany ? 1.5 : 0.5;
+                                        ctx.stroke();
                                     }
                                 }
                             }
 
-                            // Draw particles
+                            // Draw stable particles
                             particles.forEach(p => {
-                                p.x += p.vx;
-                                p.y += p.vy;
-
-                                if (p.x < 0 || p.x > width) p.vx *= -1;
-                                if (p.y < 0 || p.y > height) p.vy *= -1;
-
                                 ctx.beginPath();
-                                ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
                                 ctx.fillStyle = '#fff';
                                 ctx.fill();
                             });
-
-                            requestAnimationFrame(draw);
                         }
+                        
+                        // Draw once, or only on resize
                         draw();
+                        // No requestAnimationFrame needed since it's now static
                     """)
                 }
             }
