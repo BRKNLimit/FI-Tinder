@@ -11,6 +11,12 @@ object MatchingService {
 
     var isLaunched = false
 
+    private val sportGroup = setOf("Fußball", "Wandern", "Yoga", "Gym / Fitness", "Teamsport", "ab zum Sport", "Sportergebnisse")
+    private val gamingGroup = setOf("Gaming", "Zocken", "Gaming News")
+    private val foodGroup = setOf("Kochen", "Fancy kochen", "Snacks")
+    private val travelGroup = setOf("Reisen", "Urlaubspläne", "Asien", "Nordamerika", "Südamerika", "Südeuropa", "Skandinavien", "Hauptsache warm", "Hauptsache Action", "Australien", "Afrika", "Städtetrip", "Roadtrip")
+    private val chillGroup = setOf("Balkonien", "ab auf die Couch", "Filme und Serien", "Tee", "Wasser (stay hydrated)")
+
     fun calculatePairScore(u1: UserData, u2: UserData): Int {
         var score = 0
         // Synergy: +10 for tech/hobby, +5 for soft factors
@@ -116,9 +122,20 @@ object MatchingService {
                 val top2 = sortedInterests.getOrNull(1)?.key
                 
                 val teamName = generateCleverTeamName(top1, top2)
+                
+                // STEP 4: Icebreaker Missions
+                val teamMission = when {
+                    top1 in sportGroup || top2 in sportGroup -> "Find a booth with a physical activity and complete it as a team!"
+                    top1 in gamingGroup || top2 in gamingGroup -> "Find the retro-gaming stand and share your highest all-time highscore."
+                    top1 in foodGroup || top2 in foodGroup -> "Locate the nearest catering station and decide on the best snack of the day!"
+                    top1 in travelGroup || top2 in travelGroup -> "Find a map of the venue and point out where you'd like to travel next together."
+                    top1 in chillGroup || top2 in chillGroup -> "Find a quiet lounge area and discuss your favorite binge-watch recommendation."
+                    else -> "Find a booth using ${top1 ?: "new tech"} and ask the staff about their biggest challenge!"
+                }
 
                 val tId = TeamsTable.insert {
                     it[name] = teamName
+                    it[mission] = teamMission
                 }[TeamsTable.id]
 
                 members.forEach { m -> Users.update({ Users.email eq m.email }) { it[teamId] = tId } }
@@ -132,12 +149,6 @@ object MatchingService {
         if (t2 == null) return "The $t1 Squad"
 
         // STEP 1: SYNERGY OVERRIDES
-        val sportGroup = setOf("Fußball", "Wandern", "Yoga", "Gym / Fitness", "Teamsport", "ab zum Sport", "Sportergebnisse")
-        val gamingGroup = setOf("Gaming", "Zocken", "Gaming News")
-        val foodGroup = setOf("Kochen", "Fancy kochen", "Snacks")
-        val travelGroup = setOf("Reisen", "Urlaubspläne", "Asien", "Nordamerika", "Südamerika", "Südeuropa", "Skandinavien", "Hauptsache warm", "Hauptsache Action", "Australien", "Afrika", "Städtetrip", "Roadtrip")
-        val chillGroup = setOf("Balkonien", "ab auf die Couch", "Filme und Serien", "Tee", "Wasser (stay hydrated)")
-
         val synergyNames = when {
             t1 in sportGroup && t2 in sportGroup -> listOf("The Athletics", "The Sweat Equity", "The Varsity Squad")
             t1 in gamingGroup && t2 in gamingGroup -> listOf("The Tryhards", "The Cyber Syndicate", "The Final Bosses")

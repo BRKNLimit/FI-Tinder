@@ -65,6 +65,7 @@ fun Route.adminRoutes() {
 
     post("/admin/match") {
         MatchingService.runBatchMatching()
+        com.fiforum.services.MatchingSocketService.broadcastMatchingFinished()
         call.respondRedirect("/admin")
     }
 

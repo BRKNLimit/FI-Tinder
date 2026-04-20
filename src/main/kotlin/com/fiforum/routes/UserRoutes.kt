@@ -25,27 +25,41 @@ fun Route.userRoutes() {
             val teamId = userRow[Users.teamId]
             if (teamId == null || !MatchingService.isLaunched) {
                 val waitingUsers = Users.select { Users.teamId.isNull() }.map {
-                    UserData(it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel])
+                    UserData(
+                        it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
+                        it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
+                        it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture]
+                    )
                 }
                 Triple(userRow[Users.name], waitingUsers, null)
             } else {
-                val teamName = TeamsTable.select { TeamsTable.id eq teamId }.single()[TeamsTable.name]
+                val teamRow = TeamsTable.select { TeamsTable.id eq teamId }.single()
+                val teamName = teamRow[TeamsTable.name]
+                val teamMission = teamRow[TeamsTable.mission] ?: "Find your team and start the conversation!"
+                
                 val members = Users.select { Users.teamId eq teamId }.map {
-                    UserData(it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel])
+                    UserData(
+                        it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
+                        it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
+                        it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture]
+                    )
                 }
-                Triple(teamName, emptyList<UserData>(), members)
+                Quad(teamName, teamMission, emptyList<UserData>(), members)
             }
         }
 
         if (result == null) {
             call.respondRedirect("/")
         } else {
-            val (nameOrTeam, waitingUsers, members) = result
-            if (members == null) {
-                call.respondHtml { waitingPage(nameOrTeam as String, waitingUsers as List<UserData>, emailAddr) }
+            if (result is Triple<*, *, *>) {
+                val (name, waitingUsers, _) = result as Triple<String, List<UserData>, *>
+                call.respondHtml { waitingPage(name, waitingUsers, emailAddr) }
             } else {
-                call.respondHtml { teamPage(nameOrTeam as String, members as List<UserData>) }
+                val (teamName, mission, _, members) = result as Quad<String, String, *, List<UserData>>
+                call.respondHtml { teamPage(teamName, members, mission) }
             }
         }
     }
 }
+
+data class Quad<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
