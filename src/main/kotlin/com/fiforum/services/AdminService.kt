@@ -14,6 +14,7 @@ object AdminService {
     private val hobbies = listOf("Fußball", "Kochen", "Gaming", "Wandern", "Lesen", "Reisen", "Fotografie", "Musik", "Yoga", "Malen")
     private val techInterests = listOf("Kotlin", "AI", "Cloud", "Cyber Security", "Blockchain", "DevOps", "Frontend", "Backend", "Mobile", "Data Science")
     private val travelOptions = listOf("Asien", "Nordamerika", "Australien", "Afrika", "Skandinavien", "Südamerika", "Hauptsache Warm", "Hauptsache Action", "Süd Europa")
+    private val coffeeTopics = listOf("Tech-Gossip", "Börse & Krypto", "Sport-Ergebnisse", "Filme & Serien", "Haustiere & Alltag", "Urlaubspläne", "Gaming News", "Lokale Events")
     private val options = listOf("Ja", "Nein", "Manchmal", "Vielleicht")
 
     fun generateMockData(count: Int) {
@@ -27,8 +28,8 @@ object AdminService {
                     it[hobby] = hobbies.random()
                     it[techInterest] = techInterests.random()
                     it[travel] = travelOptions.random()
-                    it[workstyle] = options.random()
-                    it[coffeeTalk] = options.random()
+                    it[workstyle] = "Remote"
+                    it[coffeeTalk] = coffeeTopics.random()
                     it[afterWork] = options.random()
                     it[popculture] = options.random()
                     it[fuel] = options.random()

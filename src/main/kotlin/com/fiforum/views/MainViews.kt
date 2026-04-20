@@ -75,6 +75,21 @@ fun HTML.registrationPage() {
                         option { +"Remote" }; option { +"Office" }; option { +"Hybrid" } 
                     }
                 }
+                div("input-group") {
+                    label { +"Gespräche an der Kaffeemaschine" }
+                    select {
+                        name = "coffeeTalk"; required = true
+                        option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
+                        option { +"Tech-Gossip" }
+                        option { +"Börse & Krypto" }
+                        option { +"Sport-Ergebnisse" }
+                        option { +"Filme & Serien" }
+                        option { +"Haustiere & Alltag" }
+                        option { +"Urlaubspläne" }
+                        option { +"Gaming News" }
+                        option { +"Lokale Events" }
+                    }
+                }
                 
                 button(type = ButtonType.submit) { +"Registrieren" }
             }
