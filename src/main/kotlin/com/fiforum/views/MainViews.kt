@@ -240,52 +240,162 @@ fun HTML.profilePage(user: UserData) {
     }
 }
 
-fun HTML.waitingPage(name: String, waitingUsers: List<UserData>, email: String) {
+fun HTML.waitingPage(name: String, initialWaitingUsers: List<UserData>, email: String) {
     layout(
         title = "Waiting // Matchmaker",
         headContent = {
             script {
                 unsafe {
                     raw("""
-                        const waitingUsers = ${waitingUsers.map { "{ name: '${it.name}', company: '${it.company}', hobby: '${it.hobby}', tech: '${it.techInterest}', travel: '${it.travel}', work: '${it.workstyle}', coffee: '${it.coffeeTalk}', after: '${it.afterWork}', fuel: '${it.fuel}' }" }};
                         const userEmail = '$email';
+                        let particles = [];
+                        let size = 350;
+                        const centerX = size / 2;
+                        const centerY = size / 2;
+                        let angle = 0;
+
+                        const companyColors = {
+                            'Star Finanz': '#ff0000',
+                            'Finanz Informatik': '#ffff00',
+                            'inasys': '#00ff00',
+                            'FI-TS': '#8000ff',
+                            'FI-SP': '#0080ff',
+                            'FINMAS': '#ff8000'
+                        };
                         
-                        // --- WebSocket Reveal Logic ---
+                        const companyOffsets = {
+                            'Star Finanz': { x: -60, y: -60 },
+                            'Finanz Informatik': { x: 60, y: -60 },
+                            'inasys': { x: 60, y: 60 },
+                            'FI-TS': { x: -60, y: 60 },
+                            'FI-SP': { x: 0, y: -80 },
+                            'FINMAS': { x: 0, y: 80 }
+                        };
+
+                        function hashCode(str) {
+                            let hash = 0;
+                            for (let i = 0; i < str.length; i++) {
+                                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                                hash |= 0;
+                            }
+                            return Math.abs(hash);
+                        }
+
+                        async function refreshUsers() {
+                            try {
+                                const response = await fetch('/api/waiting-users');
+                                const users = await response.json();
+                                document.getElementById('nodeCount').innerText = users.length;
+                                
+                                users.forEach(u => {
+                                    if (!particles.find(p => p.email === u.email)) {
+                                        const seed = hashCode(u.name + u.email);
+                                        const offset = companyOffsets[u.company] || { x: 0, y: 0 };
+                                        
+                                        particles.push({
+                                            ...u,
+                                            ox: offset.x + (seed % 60) - 30,
+                                            oy: offset.y + ((seed / 60) % 60) - 30,
+                                            radius: 3,
+                                            color: companyColors[u.company] || '#ffffff'
+                                        });
+                                    }
+                                });
+
+                                // Apply spacing/repulsion only to the base coordinates (ox, oy)
+                                for(let i=0; i<20; i++) {
+                                    particles.forEach(p1 => {
+                                        particles.forEach(p2 => {
+                                            if(p1 === p2) return;
+                                            const dx = p1.ox - p2.ox;
+                                            const dy = p1.oy - p2.oy;
+                                            const dist = Math.hypot(dx, dy) || 1;
+                                            if(dist < 45) {
+                                                const force = (45 - dist) / 4;
+                                                p1.ox += (dx/dist) * force;
+                                                p1.oy += (dy/dist) * force;
+                                            }
+                                        });
+                                    });
+                                }
+                            } catch (e) { console.error("Refresh failed", e); }
+                        }
+
                         function setupWebSocket() {
                             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
                             const ws = new WebSocket(protocol + '//' + window.location.host + '/matching-ws');
-                            
-                            ws.onmessage = (event) => {
-                                if (event.data === 'MATCHING_FINISHED') {
-                                    triggerGlitchReveal();
-                                }
-                            };
-                            
-                            ws.onclose = () => {
-                                setTimeout(setupWebSocket, 2000); // Reconnect if dropped
-                            };
+                            ws.onmessage = (event) => { if (event.data === 'MATCHING_FINISHED') triggerGlitchReveal(); };
+                            ws.onclose = () => { setTimeout(setupWebSocket, 2000); };
                         }
 
                         function triggerGlitchReveal() {
                             const overlay = document.getElementById('glitchOverlay');
                             const status = document.getElementById('glitchStatus');
                             overlay.style.display = 'flex';
-                            
                             let progress = 0;
                             const interval = setInterval(() => {
                                 progress += Math.random() * 15;
                                 if (progress >= 100) {
                                     progress = 100;
                                     clearInterval(interval);
-                                    setTimeout(() => {
-                                        window.location.href = '/myteam?email=' + userEmail;
-                                    }, 500);
+                                    setTimeout(() => { window.location.href = '/myteam?email=' + userEmail; }, 500);
                                 }
                                 status.innerText = Math.floor(progress) + '%';
                             }, 100);
                         }
 
-                        document.addEventListener('DOMContentLoaded', setupWebSocket);
+                        function animate() {
+                            const canvas = document.getElementById('connectionCanvas');
+                            if(!canvas) return;
+                            const ctx = canvas.getContext('2d');
+                            ctx.fillStyle = '#000';
+                            ctx.fillRect(0, 0, size, size);
+                            
+                            angle += 0.0005;
+
+                            const rotated = particles.map(p => {
+                                const cos = Math.cos(angle);
+                                const sin = Math.sin(angle);
+                                return {
+                                    ...p,
+                                    x: centerX + (p.ox * cos - p.oy * sin),
+                                    y: centerY + (p.ox * sin + p.oy * cos)
+                                };
+                            });
+
+                            for (let i = 0; i < rotated.length; i++) {
+                                for (let j = i + 1; j < rotated.length; j++) {
+                                    const p1 = rotated[i];
+                                    const p2 = rotated[j];
+                                    const hasMatch = (p1.hobby === p2.hobby) || (p1.techInterest === p2.techInterest);
+
+                                    if (hasMatch) {
+                                        ctx.beginPath();
+                                        ctx.moveTo(p1.x, p1.y);
+                                        ctx.lineTo(p2.x, p2.y);
+                                        ctx.strokeStyle = 'rgba(100, 100, 100, 0.15)';
+                                        ctx.lineWidth = 0.5;
+                                        ctx.stroke();
+                                    }
+                                }
+                            }
+
+                            rotated.forEach(p => {
+                                ctx.beginPath();
+                                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                                ctx.fillStyle = p.color;
+                                ctx.fill();
+                            });
+                            
+                            requestAnimationFrame(animate);
+                        }
+
+                        document.addEventListener('DOMContentLoaded', () => {
+                            setupWebSocket();
+                            refreshUsers();
+                            setInterval(refreshUsers, 1000);
+                            animate();
+                        });
                     """)
                 }
             }
@@ -299,122 +409,12 @@ fun HTML.waitingPage(name: String, waitingUsers: List<UserData>, email: String) 
                 style = "position: relative; width: 350px; height: 350px; margin: 20px auto; overflow: hidden; background: #000; border: 1px solid #333;"
                 canvas {
                     id = "connectionCanvas"
+                    width = "350"; height = "350"
                     style = "width: 100%; height: 100%;"
                 }
                 div {
                     style = "position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 5px; font-size: 0.6rem; color: var(--accent); font-family: 'VT323';"
-                    +"NODES_ACTIVE: ${waitingUsers.size}"
-                }
-            }
-
-            script {
-                unsafe {
-                    raw("""
-                        const canvas = document.getElementById('connectionCanvas');
-                        const ctx = canvas.getContext('2d');
-                        let size = 350;
-                        canvas.width = canvas.height = size;
-                        
-                        const companyColors = {
-                            'Star Finanz': '#ff0000',
-                            'Finanz Informatik': '#ffff00',
-                            'inasys': '#00ff00',
-                            'FI-TS': '#8000ff',
-                            'FI-SP': '#0080ff',
-                            'FINMAS': '#ff8000'
-                        };
-
-                        function hashCode(str) {
-                            let hash = 0;
-                            for (let i = 0; i < str.length; i++) {
-                                hash = ((hash << 5) - hash) + str.charCodeAt(i);
-                                hash |= 0;
-                            }
-                            return Math.abs(hash);
-                        }
-
-                        // Generate initial fixed positions
-                        const particles = waitingUsers.map(u => {
-                            const seed = hashCode(u.name + u.email);
-                            return {
-                                ...u,
-                                // Position relative to center (0,0)
-                                ox: (seed % 200) - 100, 
-                                oy: ((seed / 200) % 200) - 100,
-                                radius: 3,
-                                color: companyColors[u.company] || '#ffffff'
-                            };
-                        });
-
-                        // Run a quick force-separation on original coords to prevent overlaps
-                        for(let i=0; i<100; i++) {
-                            particles.forEach(p1 => {
-                                particles.forEach(p2 => {
-                                    if(p1 === p2) return;
-                                    const dx = p1.ox - p2.ox;
-                                    const dy = p1.oy - p2.oy;
-                                    const dist = Math.hypot(dx, dy) || 1;
-                                    if(dist < 30) {
-                                        const force = (30 - dist) / 2;
-                                        p1.ox += (dx/dist) * force;
-                                        p1.oy += (dy/dist) * force;
-                                    }
-                                });
-                            });
-                        }
-
-                        let angle = 0;
-                        function animate() {
-                            ctx.fillStyle = '#000';
-                            ctx.fillRect(0, 0, size, size);
-                            
-                            const centerX = size / 2;
-                            const centerY = size / 2;
-                            angle += 0.002; // Slow rotation
-
-                            // Calculate rotated positions
-                            const rotated = particles.map(p => {
-                                const cos = Math.cos(angle);
-                                const sin = Math.sin(angle);
-                                return {
-                                    ...p,
-                                    x: centerX + (p.ox * cos - p.oy * sin),
-                                    y: centerY + (p.ox * sin + p.oy * cos)
-                                };
-                            });
-
-                            // Draw Connections (Fixed logic, no jumping)
-                            for (let i = 0; i < rotated.length; i++) {
-                                for (let j = i + 1; j < rotated.length; j++) {
-                                    const p1 = rotated[i];
-                                    const p2 = rotated[j];
-                                    
-                                    const isSameCompany = p1.company === p2.company && p1.company !== '';
-                                    const hasInterestMatch = (p1.hobby === p2.hobby) || (p1.tech === p2.tech);
-
-                                    if (isSameCompany || hasInterestMatch) {
-                                        ctx.beginPath();
-                                        ctx.moveTo(p1.x, p1.y);
-                                        ctx.lineTo(p2.x, p2.y);
-                                        ctx.strokeStyle = isSameCompany ? p1.color : 'rgba(255, 255, 255, 0.1)';
-                                        ctx.lineWidth = isSameCompany ? 1.5 : 0.5;
-                                        ctx.stroke();
-                                    }
-                                }
-                            }
-
-                            // Draw Dots
-                            rotated.forEach(p => {
-                                ctx.beginPath();
-                                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                                ctx.fillStyle = p.color;
-                                ctx.fill();
-                            });
-                            
-                            requestAnimationFrame(animate);
-                        }
-                        animate();
-                    """)
+                    +"NODES_ACTIVE: " ; span { id = "nodeCount" ; +"0" }
                 }
             }
 
@@ -428,7 +428,6 @@ fun HTML.waitingPage(name: String, waitingUsers: List<UserData>, email: String) 
 }
 
 fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String) {
-    // Identify shared interests (occurring more than once in the team)
     val sharedHobby = members.groupingBy { it.hobby }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
     val sharedTech = members.groupingBy { it.techInterest }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
     val sharedTravel = members.groupingBy { it.travel }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
@@ -541,17 +540,14 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String) {
                             
                             if(!user) return;
 
-                            // Background
                             ctx.fillStyle = '#000';
                             ctx.fillRect(0, 0, canvas.width, canvas.height);
                             
-                            // Border
                             ctx.strokeStyle = '#fff';
                             ctx.setLineDash([5, 5]);
                             ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
                             ctx.setLineDash([]);
 
-                            // Profile Pic (if exists)
                             if(user.pic) {
                                 const img = new Image();
                                 img.onload = () => {
@@ -581,7 +577,6 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String) {
                                 ctx.font = '20px VT323';
                                 ctx.fillText(user.team.toUpperCase(), 120, 120);
 
-                                // Bottom "Nothing" Style elements
                                 ctx.fillStyle = '#333';
                                 ctx.font = '10px VT323';
                                 ctx.fillText('MATCHMAKER // CONVENTION_EDITION_2026', 20, 230);
