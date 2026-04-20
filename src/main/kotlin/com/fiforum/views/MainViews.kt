@@ -296,14 +296,14 @@ fun HTML.waitingPage(name: String, waitingUsers: List<UserData>, email: String) 
             p { +"Verbindung zum Netzwerk hergestellt. Warte auf Matching-Signal..." }
             
             div("card") {
-                style = "position: relative; height: 350px; overflow: hidden; background: #000; border: 1px solid #333; cursor: crosshair;"
+                style = "position: relative; width: 350px; height: 350px; margin: 20px auto; overflow: hidden; background: #000; border: 1px solid #333;"
                 canvas {
                     id = "connectionCanvas"
-                    style = "width: 100%; height: 100%; touch-action: none;"
+                    style = "width: 100%; height: 100%;"
                 }
                 div {
                     style = "position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 5px; font-size: 0.6rem; color: var(--accent); font-family: 'VT323';"
-                    +"INTERACTIVE_NODES: ${waitingUsers.size}"
+                    +"NODES_ACTIVE: ${waitingUsers.size}"
                 }
             }
 
@@ -312,31 +312,17 @@ fun HTML.waitingPage(name: String, waitingUsers: List<UserData>, email: String) 
                     raw("""
                         const canvas = document.getElementById('connectionCanvas');
                         const ctx = canvas.getContext('2d');
-                        let width, height;
-                        let mouse = { x: -1000, y: -1000, active: false };
-
-                        function resize() {
-                            const rect = canvas.getBoundingClientRect();
-                            width = canvas.width = rect.width;
-                            height = canvas.height = rect.height;
-                        }
-                        window.onresize = resize;
-                        resize();
-
-                        canvas.addEventListener('mousemove', e => {
-                            const rect = canvas.getBoundingClientRect();
-                            mouse.x = e.clientX - rect.left;
-                            mouse.y = e.clientY - rect.top;
-                            mouse.active = true;
-                        });
-                        canvas.addEventListener('touchstart', e => {
-                            const rect = canvas.getBoundingClientRect();
-                            mouse.x = e.touches[0].clientX - rect.left;
-                            mouse.y = e.touches[0].clientY - rect.top;
-                            mouse.active = true;
-                        });
-                        canvas.addEventListener('touchend', () => mouse.active = false);
-                        canvas.addEventListener('mouseleave', () => mouse.active = false);
+                        let size = 350;
+                        canvas.width = canvas.height = size;
+                        
+                        const companyColors = {
+                            'Star Finanz': '#ff0000',
+                            'Finanz Informatik': '#ffff00',
+                            'inasys': '#00ff00',
+                            'FI-TS': '#8000ff',
+                            'FI-SP': '#0080ff',
+                            'FINMAS': '#ff8000'
+                        };
 
                         function hashCode(str) {
                             let hash = 0;
@@ -347,63 +333,81 @@ fun HTML.waitingPage(name: String, waitingUsers: List<UserData>, email: String) 
                             return Math.abs(hash);
                         }
 
+                        // Generate initial fixed positions
                         const particles = waitingUsers.map(u => {
-                            const seed = hashCode(u.name + u.company);
+                            const seed = hashCode(u.name + u.email);
                             return {
                                 ...u,
-                                x: Math.random() * width,
-                                y: Math.random() * height,
-                                vx: (Math.random() - 0.5) * 0.5,
-                                vy: (Math.random() - 0.5) * 0.5,
-                                radius: 2
+                                // Position relative to center (0,0)
+                                ox: (seed % 200) - 100, 
+                                oy: ((seed / 200) % 200) - 100,
+                                radius: 3,
+                                color: companyColors[u.company] || '#ffffff'
                             };
                         });
 
-                        function animate() {
-                            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-                            ctx.fillRect(0, 0, width, height);
-                            
-                            particles.forEach((p, idx) => {
-                                // Brownian Motion
-                                p.x += p.vx;
-                                p.y += p.vy;
-
-                                // Bounce
-                                if (p.x < 0 || p.x > width) p.vx *= -1;
-                                if (p.y < 0 || p.y > height) p.vy *= -1;
-
-                                // Mouse Interaction
-                                if (mouse.active) {
-                                    const dx = p.x - mouse.x;
-                                    const dy = p.y - mouse.y;
-                                    const dist = Math.hypot(dx, dy);
-                                    if (dist < 60) {
-                                        p.x += dx / dist * 2;
-                                        p.y += dy / dist * 2;
-                                    }
-                                }
-
-                                // Connections
-                                particles.slice(idx + 1).forEach(p2 => {
-                                    const dx = p.x - p2.x;
-                                    const dy = p.y - p2.y;
-                                    const dist = Math.hypot(dx, dy);
-                                    
-                                    if (dist < 50) {
-                                        const hasMatch = (p.hobby === p2.hobby) || (p.tech === p2.tech);
-                                        ctx.beginPath();
-                                        ctx.moveTo(p.x, p.y);
-                                        ctx.lineTo(p2.x, p2.y);
-                                        ctx.strokeStyle = hasMatch ? 'rgba(255, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.05)';
-                                        ctx.lineWidth = hasMatch ? 1 : 0.5;
-                                        ctx.stroke();
+                        // Run a quick force-separation on original coords to prevent overlaps
+                        for(let i=0; i<100; i++) {
+                            particles.forEach(p1 => {
+                                particles.forEach(p2 => {
+                                    if(p1 === p2) return;
+                                    const dx = p1.ox - p2.ox;
+                                    const dy = p1.oy - p2.oy;
+                                    const dist = Math.hypot(dx, dy) || 1;
+                                    if(dist < 30) {
+                                        const force = (30 - dist) / 2;
+                                        p1.ox += (dx/dist) * force;
+                                        p1.oy += (dy/dist) * force;
                                     }
                                 });
+                            });
+                        }
 
-                                // Draw Node
+                        let angle = 0;
+                        function animate() {
+                            ctx.fillStyle = '#000';
+                            ctx.fillRect(0, 0, size, size);
+                            
+                            const centerX = size / 2;
+                            const centerY = size / 2;
+                            angle += 0.002; // Slow rotation
+
+                            // Calculate rotated positions
+                            const rotated = particles.map(p => {
+                                const cos = Math.cos(angle);
+                                const sin = Math.sin(angle);
+                                return {
+                                    ...p,
+                                    x: centerX + (p.ox * cos - p.oy * sin),
+                                    y: centerY + (p.ox * sin + p.oy * cos)
+                                };
+                            });
+
+                            // Draw Connections (Fixed logic, no jumping)
+                            for (let i = 0; i < rotated.length; i++) {
+                                for (let j = i + 1; j < rotated.length; j++) {
+                                    const p1 = rotated[i];
+                                    const p2 = rotated[j];
+                                    
+                                    const isSameCompany = p1.company === p2.company && p1.company !== '';
+                                    const hasInterestMatch = (p1.hobby === p2.hobby) || (p1.tech === p2.tech);
+
+                                    if (isSameCompany || hasInterestMatch) {
+                                        ctx.beginPath();
+                                        ctx.moveTo(p1.x, p1.y);
+                                        ctx.lineTo(p2.x, p2.y);
+                                        ctx.strokeStyle = isSameCompany ? p1.color : 'rgba(255, 255, 255, 0.1)';
+                                        ctx.lineWidth = isSameCompany ? 1.5 : 0.5;
+                                        ctx.stroke();
+                                    }
+                                }
+                            }
+
+                            // Draw Dots
+                            rotated.forEach(p => {
                                 ctx.beginPath();
                                 ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                                ctx.fillStyle = '#fff';
+                                ctx.fillStyle = p.color;
                                 ctx.fill();
                             });
                             
