@@ -476,7 +476,7 @@ fun HTML.waitingPage(name: String, initialWaitingUsers: List<UserData>, email: S
     }
 }
 
-fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, currentUserEmail: String, teamColor: String) {
+fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, currentUserEmail: String, teamColor: String, badges: List<String> = emptyList()) {
     val sortedMembers = members.sortedByDescending { it.email.lowercase() == currentUserEmail.lowercase() }
     val currentUser = sortedMembers.firstOrNull { it.email.lowercase() == currentUserEmail.lowercase() }
 
@@ -503,6 +503,8 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
             script {
                 unsafe {
                     raw("""
+                        const userEmail = '$currentUserEmail';
+                        
                         function setupTeamWebSocket() {
                             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
                             const ws = new WebSocket(protocol + '//' + window.location.host + '/matching-ws');
@@ -531,7 +533,7 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                             }, 50);
                         }
 
-                        function downloadVCard(u) {
+                        async function downloadVCard(u) {
                             const vcard = "BEGIN:VCARD\n" +
                                 "VERSION:3.0\n" +
                                 "FN:" + u.name + "\n" +
@@ -543,6 +545,15 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                                 (u.linkedin ? "URL:" + u.linkedin + "\n" : "") +
                                 "END:VCARD";
                             
+                            // Send API call to track download for badge
+                            try {
+                                await fetch('/api/vcard-downloaded', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                    body: 'email=' + encodeURIComponent(userEmail)
+                                });
+                            } catch(e) {}
+
                             const blob = new Blob([vcard], { type: 'text/vcard' });
                             const url = window.URL.createObjectURL(blob);
                             const a = document.createElement('a');
@@ -669,7 +680,13 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                         }
                         div("id-card-back") {
                             div("grid-5x2") {
-                                repeat(10) {
+                                badges.take(10).forEach { b ->
+                                    div("grid-cell") { 
+                                        style = "color: var(--accent); font-weight: bold; font-size: 0.6rem;"
+                                        +b.replace('_', ' ').uppercase() 
+                                    }
+                                }
+                                repeat(10 - badges.size) {
                                     div("grid-cell") { +"." }
                                 }
                             }

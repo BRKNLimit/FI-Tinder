@@ -33,6 +33,9 @@ object Users : Table("users") {
     
     // Position/Timestamp field
     val joinedAt = datetime("joinedAt").default(LocalDateTime.now())
+
+    // Badge tracking
+    val hasDownloadedVCard = bool("hasDownloadedVCard").default(false)
     
     override val primaryKey = PrimaryKey(email)
 }
@@ -68,5 +71,6 @@ data class UserData(
     val phoneWork: String? = null,
     val address: String? = null,
     val zipCode: String? = null,
-    val joinedAt: String? = null
+    val joinedAt: String? = null,
+    val hasDownloadedVCard: Boolean = false
 )
