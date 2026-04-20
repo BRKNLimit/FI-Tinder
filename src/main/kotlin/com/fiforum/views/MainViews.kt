@@ -452,9 +452,9 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String) {
                     div("card") {
                         div {
                             style = "display: flex; align-items: flex-start; gap: 20px;"
-                            if (member.profilePicture != null) {
+                            if (member.profilePicture?.isNotBlank() == true) {
                                 img { 
-                                    src = member.profilePicture
+                                    src = if (member.profilePicture!!.startsWith("data:")) member.profilePicture!! else "data:image/png;base64,${member.profilePicture}"
                                     style = "width: 80px; height: 80px; object-fit: cover; border: var(--border);"
                                 }
                             } else {
