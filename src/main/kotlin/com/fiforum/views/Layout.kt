@@ -197,10 +197,10 @@ fun HTML.layout(title: String, headContent: HEAD.() -> Unit = {}, content: FlowC
                         flex-direction: column;
                         padding: 15px;
                     }
-                    .grid-2x5 {
+                    .grid-5x2 {
                         display: grid;
-                        grid-template-columns: repeat(2, 1fr);
-                        grid-template-rows: repeat(5, 1fr);
+                        grid-template-columns: repeat(5, 1fr);
+                        grid-template-rows: repeat(2, 1fr);
                         width: 100%;
                         height: 100%;
                         border: 1px dotted #333;

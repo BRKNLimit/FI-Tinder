@@ -657,7 +657,7 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                             }
                         }
                         div("id-card-back") {
-                            div("grid-2x5") {
+                            div("grid-5x2") {
                                 repeat(10) {
                                     div("grid-cell") { +"." }
                                 }
