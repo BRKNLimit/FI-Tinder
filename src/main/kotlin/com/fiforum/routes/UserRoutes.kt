@@ -31,6 +31,14 @@ fun Route.userRoutes() {
             } else {
                 val (teamName, teamMission, members) = transaction {
                     val teamRow = TeamsTable.select { TeamsTable.id eq teamId }.single()
+                    val index = teamRow[TeamsTable.currentMissionIndex]
+                    val missionText = when(index) {
+                        1 -> teamRow[TeamsTable.mission1]
+                        2 -> teamRow[TeamsTable.mission2]
+                        3 -> teamRow[TeamsTable.mission3]
+                        else -> teamRow[TeamsTable.mission3]
+                    } ?: "Find your team!"
+                    
                     val m = Users.select { Users.teamId eq teamId }.map {
                         UserData(
                             it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
@@ -38,7 +46,7 @@ fun Route.userRoutes() {
                             it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture]
                         )
                     }
-                    Triple(teamRow[TeamsTable.name], teamRow[TeamsTable.mission] ?: "Find your team!", m)
+                    Triple(teamRow[TeamsTable.name], missionText, m)
                 }
                 call.respondHtml { teamPage(teamName, members, teamMission) }
             }

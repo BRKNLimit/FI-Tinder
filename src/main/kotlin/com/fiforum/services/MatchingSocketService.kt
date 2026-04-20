@@ -25,4 +25,14 @@ object MatchingSocketService {
             }
         }
     }
+
+    suspend fun broadcastNewMission() {
+        sessions.forEach { session ->
+            try {
+                session.send(Frame.Text("NEW_MISSION"))
+            } catch (e: Exception) {
+                // Session might be closed
+            }
+        }
+    }
 }

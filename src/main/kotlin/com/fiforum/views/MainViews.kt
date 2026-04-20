@@ -312,15 +312,12 @@ fun HTML.waitingPage(name: String, initialWaitingUsers: List<UserData>, email: S
 
                         async function refreshUsers() {
                             try {
-                                console.log("Fetching waiting users...");
                                 const response = await fetch('/api/waiting-users');
                                 const users = await response.json();
-                                console.log("Users received:", users.length);
                                 document.getElementById('nodeCount').innerText = users.length;
                                 
                                 users.forEach(u => {
                                     if (!particles.find(p => p.email === u.email)) {
-                                        console.log("Adding new particle for:", u.name);
                                         const seed = hashCode(u.name + u.email);
                                         const offset = companyOffsets[u.company] || { x: 0, y: 0 };
                                         
@@ -334,7 +331,6 @@ fun HTML.waitingPage(name: String, initialWaitingUsers: List<UserData>, email: S
                                     }
                                 });
 
-                                // Apply spacing/repulsion only to the base coordinates (ox, oy)
                                 for(let i=0; i<20; i++) {
                                     particles.forEach(p1 => {
                                         particles.forEach(p2 => {
@@ -468,12 +464,52 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String) {
     val sharedAfter = members.groupingBy { it.afterWork }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
     val sharedFuel = members.groupingBy { it.fuel }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
 
-    layout("Your Team // Matchmaker") {
+    layout(
+        title = "Your Team // Matchmaker",
+        headContent = {
+            script {
+                unsafe {
+                    raw("""
+                        function setupTeamWebSocket() {
+                            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                            const ws = new WebSocket(protocol + '//' + window.location.host + '/matching-ws');
+                            ws.onmessage = (event) => {
+                                if (event.data === 'NEW_MISSION') {
+                                    triggerMissionGlitch();
+                                }
+                            };
+                            ws.onclose = () => setTimeout(setupTeamWebSocket, 2000);
+                        }
+
+                        function triggerMissionGlitch() {
+                            const overlay = document.getElementById('glitchOverlay');
+                            const status = document.getElementById('glitchStatus');
+                            overlay.style.display = 'flex';
+                            document.querySelector('.glitch-text').innerText = "NEW MISSION RECEIVED";
+                            
+                            let progress = 0;
+                            const interval = setInterval(() => {
+                                progress += 5;
+                                if (progress >= 100) {
+                                    clearInterval(interval);
+                                    location.reload();
+                                }
+                                status.innerText = progress + '%';
+                            }, 50);
+                        }
+
+                        document.addEventListener('DOMContentLoaded', setupTeamWebSocket);
+                    """)
+                }
+            }
+        }
+    ) {
         div("container") {
             h1 { +"Dein Team" }
             h2("accent-text") { +teamName }
 
             div("card") {
+                id = "missionCard"
                 style = "border: 2px solid var(--accent); background: rgba(255, 0, 0, 0.05); margin-bottom: 25px;"
                 h3("accent-text") { +"MISSION // ICEBREAKER" }
                 p { 

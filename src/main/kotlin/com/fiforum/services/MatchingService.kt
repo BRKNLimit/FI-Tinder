@@ -6,10 +6,13 @@ import com.fiforum.models.Users
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.random.Random
+import kotlinx.coroutines.*
+import kotlin.time.Duration.Companion.minutes
 
 object MatchingService {
 
     var isLaunched = false
+    private var schedulerJob: Job? = null
 
     private val sportGroup = setOf("Fußball", "Wandern", "Yoga", "Gym / Fitness", "Teamsport", "ab zum Sport", "Sportergebnisse")
     private val gamingGroup = setOf("Gaming", "Zocken", "Gaming News")
@@ -124,47 +127,80 @@ object MatchingService {
                 val teamName = generateCleverTeamName(top1, top2)
                 
                 // STEP 4: Icebreaker Missions
-                val teamMission = when {
+                val missions = when {
                     top1 in gamingGroup || top2 in gamingGroup -> listOf(
                         "Hand aufs Herz: Welches Game hat euch in der Schulzeit oder im Studium bisher die meisten Stunden Schlaf gekostet?",
                         "Was ist der am meisten überbewertete Tech-Trend oder Hype im Moment?",
                         "Einigt euch auf das ultimative 'Survival-Game' für einen langweiligen Berufsschul- oder Vorlesungstag."
-                    ).random()
+                    )
                     top1 in sportGroup || top2 in sportGroup -> listOf(
                         "Wenn ihr den Rest eures Lebens nur noch eine einzige Sportart machen (oder schauen) dürftet, welche wäre es?",
                         "Welche Fitness- oder Ernährungs-Weisheit ist in euren Augen absoluter Quatsch?",
                         "Findet heraus, wer von euch den kürzesten Weg zum Gym/Sportverein hat und wer den absolut verrücktesten Muskelkater-Moment seines Lebens hatte."
-                    ).random()
+                    )
                     top1 in foodGroup || top2 in foodGroup -> listOf(
                         "Es ist 19 Uhr, ihr kommt platt aus dem Büro oder der Uni. Was ist euer absolutes 15-Minuten-Lebensretter-Rezept?",
                         "Welcher klassische Büro-Snack oder welches Mensa-Essen wird von allen geliebt, ist aber eigentlich furchtbar?",
                         "Teilt euer bestes 'Studenten-Budget'-Rezept, das trotzdem so schmeckt, als käme es aus einem schicken Restaurant."
-                    ).random()
+                    )
                     top1 in travelGroup || top2 in travelGroup -> listOf(
                         "Sobald das erste richtige Vollzeitgehalt auf dem Konto ist: Welcher Trip steht ganz oben auf der Bucketlist?",
                         "Strandurlaub mit All-Inclusive oder Backpacking mit dem Rucksack – was ist der wahre Urlaub?",
                         "Erzählt euch gegenseitig von eurem absolut schlimmsten 'Reise-Fail' (verpasster Flug, verlorenes Gepäck, furchtbares Airbnb)."
-                    ).random()
+                    )
                     top1 in chillGroup || top2 in chillGroup -> listOf(
                         "Welche Serie könnt ihr immer wieder von vorne anfangen, ohne dass sie langweilig wird?",
                         "Ist 'Snoozen' am Morgen die beste Erfindung der Menschheit oder pure Selbstquälerei?",
                         "Tauscht eure besten Lifehacks aus, wie man an einem 'Remote'- oder 'Balkonien'-Tag maximal entspannt, aber auf Slack/Teams trotzdem produktiv aussieht."
-                    ).random()
+                    )
                     else -> listOf(
                         "Welches Klischee über ITler oder BWLer erfüllt ihr zu 100 % und welches so gar nicht?",
-                        "Versucht in genau 2 Minuten herauszufinden, was ihr (abgesehen von eurem Arbeitgeber) als absolute Gemeinsamkeit habt."
-                    ).random()
-                }
+                        "Versucht in genau 2 Minuten herauszufinden, was ihr (abgesehen von eurem Arbeitgeber) als absolute Gemeinsamkeit habt.",
+                        "Wenn ihr eine neue Programmiersprache oder ein neues Framework erfinden müsstet, wie hieße es und was wäre das Killer-Feature?"
+                    )
+                }.shuffled()
 
                 val tId = TeamsTable.insert {
                     it[name] = teamName
-                    it[mission] = teamMission
+                    it[mission1] = missions.getOrNull(0)
+                    it[mission2] = missions.getOrNull(1)
+                    it[mission3] = missions.getOrNull(2)
+                    it[currentMissionIndex] = 1
                 }[TeamsTable.id]
 
                 members.forEach { m -> Users.update({ Users.email eq m.email }) { it[teamId] = tId } }
             }
             isLaunched = true
+            startMissionScheduler()
         }
+    }
+
+    private fun startMissionScheduler() {
+        schedulerJob?.cancel()
+        // Use a background scope to manage mission rotation
+        schedulerJob = CoroutineScope(Dispatchers.IO).launch {
+            // Wait 15 minutes for the 2nd mission
+            delay(15.minutes)
+            incrementMissions()
+            
+            // Wait another 15 minutes for the 3rd mission
+            delay(15.minutes)
+            incrementMissions()
+        }
+    }
+
+    private suspend fun incrementMissions() {
+        transaction {
+            val teams = TeamsTable.selectAll().map { it[TeamsTable.id] }
+            teams.forEach { tId ->
+                TeamsTable.update({ TeamsTable.id eq tId }) {
+                    with(SqlExpressionBuilder) {
+                        it.update(currentMissionIndex, currentMissionIndex + 1)
+                    }
+                }
+            }
+        }
+        MatchingSocketService.broadcastNewMission()
     }
 
     private fun generateCleverTeamName(t1: String?, t2: String?): String {

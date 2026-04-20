@@ -29,7 +29,10 @@ object Users : Table("users") {
 object TeamsTable : Table("teams") {
     val id = integer("id").autoIncrement()
     val name = varchar("name", 150)
-    val mission = text("mission").nullable()
+    val mission1 = text("mission1").nullable()
+    val mission2 = text("mission2").nullable()
+    val mission3 = text("mission3").nullable()
+    val currentMissionIndex = integer("currentMissionIndex").default(1)
     override val primaryKey = PrimaryKey(id)
 }
 
