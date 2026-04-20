@@ -105,6 +105,18 @@ fun HTML.registrationPage() {
                         option { +"Fancy Kochen" }
                     }
                 }
+                div("input-group") {
+                    label { +"Mein Büro-Treibstoff..." }
+                    select {
+                        name = "fuel"; required = true
+                        option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
+                        option { +"Kaffee" }
+                        option { +"Energy Drinks" }
+                        option { +"Tee" }
+                        option { +"Wasser (Stay Hydrated)" }
+                        option { +"Snacks" }
+                    }
+                }
                 
                 button(type = ButtonType.submit) { +"Registrieren" }
             }

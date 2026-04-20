@@ -41,7 +41,7 @@ fun Route.mainRoutes() {
                         it[coffeeTalk] = params["coffeeTalk"] ?: ""
                         it[afterWork] = params["afterWork"] ?: ""
                         it[popculture] = ""
-                        it[fuel] = ""
+                        it[fuel] = params["fuel"] ?: ""
                     }
                 }
             }

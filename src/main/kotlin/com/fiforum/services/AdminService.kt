@@ -17,6 +17,7 @@ object AdminService {
     private val coffeeTopics = listOf("Tech-Gossip", "Börse & Krypto", "Sport-Ergebnisse", "Filme & Serien", "Haustiere & Alltag", "Urlaubspläne", "Gaming News", "Lokale Events")
     private val workstyleOptions = listOf("... Remote", "... im Office", "... möglichst früh", "... möglichst spät")
     private val afterWorkOptions = listOf("Feierabend Bier", "Ab zum Sport", "Ab auf die Couch", "Side Hustle", "Fancy Kochen")
+    private val fuelOptions = listOf("Kaffee", "Energy Drinks", "Tee", "Wasser (Stay Hydrated)", "Snacks")
     private val options = listOf("Ja", "Nein", "Manchmal", "Vielleicht")
 
     fun generateMockData(count: Int) {
@@ -34,7 +35,7 @@ object AdminService {
                     it[coffeeTalk] = coffeeTopics.random()
                     it[afterWork] = afterWorkOptions.random()
                     it[popculture] = options.random()
-                    it[fuel] = options.random()
+                    it[fuel] = fuelOptions.random()
                 }
             }
         }
