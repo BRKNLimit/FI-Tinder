@@ -16,7 +16,7 @@ fun main(args: Array<String>) {
 
 fun Application.module() {
     Database.connect("jdbc:sqlite:./matchmaker.db", "org.sqlite.JDBC")
-    transaction { SchemaUtils.create(Users, TeamsTable) }
+    transaction { SchemaUtils.createMissingTablesAndColumns(Users, TeamsTable) }
 
     transaction {
         val assignedUsersCount = Users.select { Users.teamId.isNotNull() }.count()
