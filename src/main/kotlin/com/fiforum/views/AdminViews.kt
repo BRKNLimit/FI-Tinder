@@ -10,8 +10,9 @@ fun HTML.adminDashboard(
     teams: List<Pair<String, List<UserData>>> = emptyList(),
     allUsers: List<UserData> = emptyList()
 ) {
-    layout("Admin X-Ray // Matchmaker") {
-        head {
+    layout(
+        title = "Admin X-Ray // Matchmaker",
+        headContent = {
             script {
                 unsafe {
                     raw("""
@@ -38,9 +39,9 @@ fun HTML.adminDashboard(
 
                             container.innerHTML = filtered.map(u => `
                                 <div class="card" style="margin-bottom: 5px; padding: 10px; font-size: 0.8rem;">
-                                    <b class="accent-text">${u.name}</b> (${u.company})<br/>
-                                    <small style="color: #888;">${u.email}</small><br/>
-                                    <small>${u.hobby} | ${u.tech} | ${u.travel}</small>
+                                    <b class="accent-text">${"$"}{u.name}</b> (${"$"}{u.company})<br/>
+                                    <small style="color: #888;">${"$"}{u.email}</small><br/>
+                                    <small>${"$"}{u.hobby} | ${"$"}{u.tech} | ${"$"}{u.travel}</small>
                                 </div>
                             `).join('');
                         }
@@ -48,6 +49,7 @@ fun HTML.adminDashboard(
                 }
             }
         }
+    ) {
         div("container") {
             h1 { +"Admin X-Ray" }
             div("card") {

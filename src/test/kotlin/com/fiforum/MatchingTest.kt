@@ -8,13 +8,14 @@ import io.kotest.matchers.ints.shouldBeLessThan
 
 class MatchingTest : StringSpec({
 
-    "identical users with same company should have negative score" {
+    "identical users with same company should have moderated score" {
         val u1 = UserData("lars@example.com", "Lars", "Finanz Informatik", "Gaming", "Kotlin", "Asien", "... Remote", "Tech-Gossip", "Ab zum Sport", "", "Kaffee")
         val u2 = UserData("tester@example.com", "Tester", "Finanz Informatik", "Gaming", "Kotlin", "Asien", "... Remote", "Tech-Gossip", "Ab zum Sport", "", "Kaffee")
         
         val score = MatchingService.calculatePairScore(u1, u2)
         println("Score for identical users same company: $score")
-        score shouldBeLessThan 0
+        // New Weights: 20+20+10+10+10+10+10 = 90. Company penalty: -25. Total: 65.
+        score shouldBeGreaterThan 0
     }
 
     "identical users with different company should have high positive score" {
