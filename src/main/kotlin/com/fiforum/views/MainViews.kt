@@ -190,6 +190,15 @@ fun HTML.waitingPage(name: String, waitingUsers: List<UserData>, email: String) 
                             return Math.abs(hash);
                         }
 
+                        const companyColors = {
+                            'Star Finanz': '#ff0000',      // Red
+                            'Finanz Informatik': '#ffff00', // Yellow
+                            'inasys': '#00ff00',           // Green
+                            'FI-TS': '#8000ff',            // Purple
+                            'FI-SP': '#0080ff',            // Blue
+                            'FINMAS': '#ff8000'            // Orange
+                        };
+
                         const particles = waitingUsers.map(u => {
                             const seed = hashCode(u.name + u.company);
                             return {
@@ -198,7 +207,8 @@ fun HTML.waitingPage(name: String, waitingUsers: List<UserData>, email: String) 
                                 y: ((seed / 1000) % 1000) / 1000 * height,
                                 vx: 0,
                                 vy: 0,
-                                radius: 3
+                                radius: 3,
+                                color: companyColors[u.company] || '#ffffff'
                             };
                         });
 
@@ -251,10 +261,12 @@ fun HTML.waitingPage(name: String, waitingUsers: List<UserData>, email: String) 
                                         ctx.beginPath();
                                         ctx.moveTo(p1.x, p1.y);
                                         ctx.lineTo(p2.x, p2.y);
-                                        // Permanent lines, no distance fade-out
-                                        ctx.strokeStyle = isSameCompany ? 'rgba(255, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.1)';
+                                        // Use company color for company lines, otherwise subtle white
+                                        ctx.strokeStyle = isSameCompany ? p1.color : 'rgba(255, 255, 255, 0.1)';
+                                        ctx.globalAlpha = isSameCompany ? 0.6 : 1.0;
                                         ctx.lineWidth = isSameCompany ? 1.5 : 0.5;
                                         ctx.stroke();
+                                        ctx.globalAlpha = 1.0;
                                     }
                                 }
                             }
@@ -263,7 +275,7 @@ fun HTML.waitingPage(name: String, waitingUsers: List<UserData>, email: String) 
                             particles.forEach(p => {
                                 ctx.beginPath();
                                 ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                                ctx.fillStyle = '#fff';
+                                ctx.fillStyle = p.color;
                                 ctx.fill();
                             });
                         }
