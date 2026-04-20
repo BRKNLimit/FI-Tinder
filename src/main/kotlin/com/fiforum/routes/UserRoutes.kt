@@ -10,6 +10,7 @@ import io.ktor.server.application.*
 import io.ktor.server.html.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -23,22 +24,23 @@ fun Route.userRoutes() {
 
             val teamId = userRow[Users.teamId]
             if (teamId == null || !MatchingService.isLaunched) {
-                userRow[Users.name] to null
+                val waitingCount = Users.selectAll().count() - 1 // Exclude current user
+                Triple(userRow[Users.name], waitingCount, null)
             } else {
                 val teamName = TeamsTable.select { TeamsTable.id eq teamId }.single()[TeamsTable.name]
                 val members = Users.select { Users.teamId eq teamId }.map {
                     UserData(it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel])
                 }
-                teamName to members
+                Triple(teamName, 0L, members)
             }
         }
 
         if (result == null) {
             call.respondRedirect("/")
         } else {
-            val (nameOrTeam, members) = result
+            val (nameOrTeam, waitingCount, members) = result
             if (members == null) {
-                call.respondHtml { waitingPage(nameOrTeam as String) }
+                call.respondHtml { waitingPage(nameOrTeam as String, waitingCount as Long) }
             } else {
                 call.respondHtml { teamPage(nameOrTeam as String, members as List<UserData>) }
             }

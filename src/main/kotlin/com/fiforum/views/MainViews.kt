@@ -124,11 +124,16 @@ fun HTML.registrationPage() {
     }
 }
 
-fun HTML.waitingPage(name: String) {
+fun HTML.waitingPage(name: String, waitingCount: Long) {
     layout("Waiting // Matchmaker") {
         div("container") {
             h1 { +"Hallo, $name" }
             p { +"Du bist registriert. Das Matching hat noch nicht begonnen." }
+            
+            div("card") {
+                p { +"Aktuell warten " ; span("accent-text") { +"$waitingCount" } ; +" andere Teilnehmer mit dir." }
+            }
+
             div {
                 span("spinner")
                 span { +" Bitte warten..." }
