@@ -26,6 +26,7 @@ object AdminService {
                 val mail = "user${Random.nextInt(100000)}@example.com"
                 Users.insert {
                     it[email] = mail
+                    it[passwordHash] = org.mindrot.jbcrypt.BCrypt.hashpw("start123", org.mindrot.jbcrypt.BCrypt.gensalt())
                     it[name] = names.random()
                     it[company] = companies.random()
                     it[hobby] = hobbies.random()
@@ -34,7 +35,7 @@ object AdminService {
                     it[workstyle] = workstyleOptions.random()
                     it[coffeeTalk] = coffeeTopics.random()
                     it[afterWork] = afterWorkOptions.random()
-                    it[popculture] = options.random()
+                    it[popculture] = ""
                     it[fuel] = fuelOptions.random()
                 }
             }

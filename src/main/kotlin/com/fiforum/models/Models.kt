@@ -5,16 +5,17 @@ import org.jetbrains.exposed.sql.Table
 
 object Users : Table("users") {
     val email = varchar("email", 100)
-    val name = varchar("name", 100)
-    val company = varchar("company", 100)
-    val hobby = varchar("hobby", 100)
-    val techInterest = varchar("techInterest", 100)
-    val travel = varchar("travel", 100)
-    val workstyle = varchar("workstyle", 100)
-    val coffeeTalk = varchar("coffeeTalk", 100)
-    val afterWork = varchar("afterWork", 100)
-    val popculture = varchar("popculture", 100)
-    val fuel = varchar("fuel", 100)
+    val passwordHash = varchar("passwordHash", 100)
+    val name = varchar("name", 100).default("")
+    val company = varchar("company", 100).default("")
+    val hobby = varchar("hobby", 100).default("")
+    val techInterest = varchar("techInterest", 100).default("")
+    val travel = varchar("travel", 100).default("")
+    val workstyle = varchar("workstyle", 100).default("")
+    val coffeeTalk = varchar("coffeeTalk", 100).default("")
+    val afterWork = varchar("afterWork", 100).default("")
+    val popculture = varchar("popculture", 100).default("")
+    val fuel = varchar("fuel", 100).default("")
     val teamId = integer("team_id").nullable()
     
     // Networking & Profile fields

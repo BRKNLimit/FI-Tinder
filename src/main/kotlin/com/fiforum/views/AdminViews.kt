@@ -29,7 +29,7 @@ fun HTML.adminDashboard(
                             const coffeeTalk = document.getElementById('coffeeTalkFilter').value;
 
                             const filtered = allUsers.filter(u => {
-                                const matchesSearch = u.name.toLowerCase().includes(search) || u.email.toLowerCase().includes(search);
+                                const matchesSearch = u.name.toLowerCase().includes(search);
                                 const matchesCompany = company === "" || u.company === company;
                                 const matchesHobby = hobby === "" || u.hobby === hobby;
                                 const matchesTech = tech === "" || u.tech === tech;
@@ -45,13 +45,16 @@ fun HTML.adminDashboard(
                             const countSpan = document.getElementById('filteredCount');
                             countSpan.innerText = filtered.length;
 
-                            container.innerHTML = filtered.map(u => `
-                                <div class="card" style="margin-bottom: 5px; padding: 10px; font-size: 0.8rem;">
-                                    <b class="accent-text">${"$"}{u.name}</b> (${"$"}{u.company})<br/>
-                                    <small style="color: #888;">${"$"}{u.email}</small><br/>
-                                    <small>${"$"}{u.hobby} | ${"$"}{u.tech} | ${"$"}{u.travel} | ${"$"}{u.fuel}</small>
-                                </div>
-                            `).join('');
+                            container.innerHTML = filtered.map(u => {
+                                const maskedEmail = u.email.split('@')[0].substring(0, 3) + '***@' + u.email.split('@')[1];
+                                return `
+                                    <div class="card" style="margin-bottom: 5px; padding: 10px; font-size: 0.8rem;">
+                                        <b class="accent-text">${"$"}{u.name}</b> (${"$"}{u.company})<br/>
+                                        <small style="color: #888;">${"$"}{maskedEmail}</small><br/>
+                                        <small>${"$"}{u.hobby} | ${"$"}{u.tech} | ${"$"}{u.travel} | ${"$"}{u.fuel}</small>
+                                    </div>
+                                `;
+                            }).join('');
                         }
                     """)
                 }
