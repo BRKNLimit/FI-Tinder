@@ -125,12 +125,35 @@ object MatchingService {
                 
                 // STEP 4: Icebreaker Missions
                 val teamMission = when {
-                    top1 in sportGroup || top2 in sportGroup -> "Wenn ihr den Rest eures Lebens nur noch eine einzige Sportart machen (oder schauen) dürftet, welche wäre es?"
-                    top1 in gamingGroup || top2 in gamingGroup -> "Welches Game hat euch in der Schulzeit oder im Studium bisher die meisten Stunden Schlaf gekostet?"
-                    top1 in foodGroup || top2 in foodGroup -> "Es ist 19 Uhr, ihr kommt platt aus dem Büro oder der Uni. Was ist euer absolutes 15-Minuten-Lebensretter-Rezept?"
-                    top1 in travelGroup || top2 in travelGroup -> "Sobald das erste richtige Vollzeitgehalt auf dem Konto ist: Welcher Trip steht ganz oben auf der Bucketlist?"
-                    top1 in chillGroup || top2 in chillGroup -> "Welche Serie könnt ihr immer wieder von vorne anfangen, ohne dass sie langweilig wird?"
-                    else -> "Welches Klischee über ITler oder BWLer erfüllt ihr zu 100 % und welches so gar nicht?"
+                    top1 in gamingGroup || top2 in gamingGroup -> listOf(
+                        "Hand aufs Herz: Welches Game hat euch in der Schulzeit oder im Studium bisher die meisten Stunden Schlaf gekostet?",
+                        "Was ist der am meisten überbewertete Tech-Trend oder Hype im Moment?",
+                        "Einigt euch auf das ultimative 'Survival-Game' für einen langweiligen Berufsschul- oder Vorlesungstag."
+                    ).random()
+                    top1 in sportGroup || top2 in sportGroup -> listOf(
+                        "Wenn ihr den Rest eures Lebens nur noch eine einzige Sportart machen (oder schauen) dürftet, welche wäre es?",
+                        "Welche Fitness- oder Ernährungs-Weisheit ist in euren Augen absoluter Quatsch?",
+                        "Findet heraus, wer von euch den kürzesten Weg zum Gym/Sportverein hat und wer den absolut verrücktesten Muskelkater-Moment seines Lebens hatte."
+                    ).random()
+                    top1 in foodGroup || top2 in foodGroup -> listOf(
+                        "Es ist 19 Uhr, ihr kommt platt aus dem Büro oder der Uni. Was ist euer absolutes 15-Minuten-Lebensretter-Rezept?",
+                        "Welcher klassische Büro-Snack oder welches Mensa-Essen wird von allen geliebt, ist aber eigentlich furchtbar?",
+                        "Teilt euer bestes 'Studenten-Budget'-Rezept, das trotzdem so schmeckt, als käme es aus einem schicken Restaurant."
+                    ).random()
+                    top1 in travelGroup || top2 in travelGroup -> listOf(
+                        "Sobald das erste richtige Vollzeitgehalt auf dem Konto ist: Welcher Trip steht ganz oben auf der Bucketlist?",
+                        "Strandurlaub mit All-Inclusive oder Backpacking mit dem Rucksack – was ist der wahre Urlaub?",
+                        "Erzählt euch gegenseitig von eurem absolut schlimmsten 'Reise-Fail' (verpasster Flug, verlorenes Gepäck, furchtbares Airbnb)."
+                    ).random()
+                    top1 in chillGroup || top2 in chillGroup -> listOf(
+                        "Welche Serie könnt ihr immer wieder von vorne anfangen, ohne dass sie langweilig wird?",
+                        "Ist 'Snoozen' am Morgen die beste Erfindung der Menschheit oder pure Selbstquälerei?",
+                        "Tauscht eure besten Lifehacks aus, wie man an einem 'Remote'- oder 'Balkonien'-Tag maximal entspannt, aber auf Slack/Teams trotzdem produktiv aussieht."
+                    ).random()
+                    else -> listOf(
+                        "Welches Klischee über ITler oder BWLer erfüllt ihr zu 100 % und welches so gar nicht?",
+                        "Versucht in genau 2 Minuten herauszufinden, was ihr (abgesehen von eurem Arbeitgeber) als absolute Gemeinsamkeit habt."
+                    ).random()
                 }
 
                 val tId = TeamsTable.insert {
@@ -271,6 +294,7 @@ object MatchingService {
 
     private fun mutateState(state: List<List<UserData>>): List<List<UserData>> {
         val newState = state.map { it.toMutableList() }.toMutableList()
+        if (newState.size < 2) return newState
         val t1Idx = Random.nextInt(newState.size)
         val t2Idx = Random.nextInt(newState.size)
         if (t1Idx == t2Idx) return newState
