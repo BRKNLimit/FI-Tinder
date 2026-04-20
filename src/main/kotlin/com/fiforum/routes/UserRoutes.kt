@@ -48,7 +48,7 @@ fun Route.userRoutes() {
                     }
                     Triple(teamRow[TeamsTable.name], missionText, m)
                 }
-                call.respondHtml { teamPage(teamName, members, teamMission) }
+                call.respondHtml { teamPage(teamName, members, teamMission, emailAddr) }
             }
         }
     }

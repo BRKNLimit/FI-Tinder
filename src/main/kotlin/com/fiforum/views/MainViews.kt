@@ -455,7 +455,11 @@ fun HTML.waitingPage(name: String, initialWaitingUsers: List<UserData>, email: S
     }
 }
 
-fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String) {
+fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, currentUserEmail: String) {
+    // Sort members so current user is always at the top
+    val sortedMembers = members.sortedByDescending { it.email.lowercase() == currentUserEmail.lowercase() }
+    val currentUser = sortedMembers.firstOrNull { it.email.lowercase() == currentUserEmail.lowercase() }
+
     val sharedHobby = members.groupingBy { it.hobby }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
     val sharedTech = members.groupingBy { it.techInterest }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
     val sharedTravel = members.groupingBy { it.travel }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
@@ -519,8 +523,11 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String) {
             }
             
             div("team-list") {
-                members.forEach { member ->
+                sortedMembers.forEach { member ->
                     div("card") {
+                        if (member.email.lowercase() == currentUserEmail.lowercase()) {
+                            style = "border: 1px solid var(--accent); box-shadow: inset 0 0 10px rgba(255,0,0,0.1);"
+                        }
                         div {
                             style = "display: flex; align-items: flex-start; gap: 20px;"
                             if (member.profilePicture?.isNotBlank() == true) {
@@ -536,7 +543,13 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String) {
                             }
                             div {
                                 style = "flex: 1;"
-                                h3 { style = "margin-top: 0;"; +member.name }
+                                h3 { 
+                                    style = "margin-top: 0;"
+                                    +member.name
+                                    if (member.email.lowercase() == currentUserEmail.lowercase()) {
+                                        span { style = "color: var(--accent); font-size: 0.8rem; margin-left: 10px;"; +"(DU)" }
+                                    }
+                                }
                                 p { 
                                     small { +"Firma: ${member.company}" } 
                                 }
@@ -604,7 +617,7 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String) {
                         function generateIDCard() {
                             const canvas = document.getElementById('idCardCanvas');
                             const ctx = canvas.getContext('2d');
-                            const user = ${members.find { it.email != null }?.let { "{ name: '${it.name}', company: '${it.company}', team: '$teamName', pic: '${it.profilePicture ?: ""}' }" } ?: "null"};
+                            const user = ${currentUser?.let { "{ name: '${it.name}', company: '${it.company}', team: '$teamName', pic: '${it.profilePicture ?: ""}' }" } ?: "null"};
                             
                             if(!user) return;
 
@@ -665,7 +678,7 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String) {
                 }
             }
 
-            a(href = "/profile?email=${members.find { it.email != null }?.email ?: ""}") {
+            a(href = "/profile?email=$currentUserEmail") {
                  button { +"Mein Profil bearbeiten" }
             }
         }
