@@ -1,5 +1,6 @@
 package com.fiforum.models
 
+import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table
 
 object Users : Table("users") {
@@ -31,6 +32,7 @@ object TeamsTable : Table("teams") {
     override val primaryKey = PrimaryKey(id)
 }
 
+@Serializable
 data class UserData(
     val email: String,
     val name: String,

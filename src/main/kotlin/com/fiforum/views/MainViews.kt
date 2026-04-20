@@ -283,12 +283,15 @@ fun HTML.waitingPage(name: String, initialWaitingUsers: List<UserData>, email: S
 
                         async function refreshUsers() {
                             try {
+                                console.log("Fetching waiting users...");
                                 const response = await fetch('/api/waiting-users');
                                 const users = await response.json();
+                                console.log("Users received:", users.length);
                                 document.getElementById('nodeCount').innerText = users.length;
                                 
                                 users.forEach(u => {
                                     if (!particles.find(p => p.email === u.email)) {
+                                        console.log("Adding new particle for:", u.name);
                                         const seed = hashCode(u.name + u.email);
                                         const offset = companyOffsets[u.company] || { x: 0, y: 0 };
                                         
