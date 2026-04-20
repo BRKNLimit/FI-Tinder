@@ -47,7 +47,8 @@ object TeamsTable : Table("teams") {
     val mission2 = text("mission2").nullable()
     val mission3 = text("mission3").nullable()
     val currentMissionIndex = integer("currentMissionIndex").default(1)
-    val teamColor = varchar("teamColor", 20).default("#ff0000") // Red fallback
+    val teamColor = varchar("teamColor", 20).default("#ff0000")
+    val lastTeamFindClick = datetime("lastTeamFindClick").nullable()
     override val primaryKey = PrimaryKey(id)
 }
 

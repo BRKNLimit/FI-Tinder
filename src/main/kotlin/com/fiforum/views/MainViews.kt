@@ -476,7 +476,7 @@ fun HTML.waitingPage(name: String, initialWaitingUsers: List<UserData>, email: S
     }
 }
 
-fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, currentUserEmail: String, teamColor: String, badges: List<String> = emptyList()) {
+fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, currentUserEmail: String, teamColor: String, badges: List<String> = emptyList(), teamId: Int, cooldownMs: Long) {
     val sortedMembers = members.sortedByDescending { it.email.lowercase() == currentUserEmail.lowercase() }
     val currentUser = sortedMembers.firstOrNull { it.email.lowercase() == currentUserEmail.lowercase() }
 
@@ -509,6 +509,26 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                             background: rgba(255, 255, 255, 0.05);
                             color: #fff !important;
                         }
+                        .team-find-overlay {
+                            position: fixed;
+                            top: 0; left: 0; width: 100%; height: 100%;
+                            background: $teamColor;
+                            z-index: 10000;
+                            display: none;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            color: #fff;
+                            font-family: 'VT323', monospace;
+                            text-align: center;
+                        }
+                        .team-find-overlay h1 { font-size: 4rem; color: #fff; }
+                        .team-find-timer { font-size: 8rem; }
+                        button:disabled {
+                            background: #333 !important;
+                            color: #666 !important;
+                            cursor: not-allowed;
+                        }
                     """)
                 }
             }
@@ -540,13 +560,67 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
 
                         function setupTeamWebSocket() {
                             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                            const ws = new WebSocket(protocol + '//' + window.location.host + '/matching-ws');
+                            const ws = new WebSocket(protocol + '//' + window.location.host + '/matching-ws?teamId=$teamId');
                             ws.onmessage = (event) => {
                                 if (event.data === 'NEW_MISSION') {
                                     triggerMissionGlitch();
+                                } else if (event.data === 'TEAM_FINDEN') {
+                                    showTeamFindOverlay();
                                 }
                             };
                             ws.onclose = () => setTimeout(setupTeamWebSocket, 2000);
+                        }
+
+                        function showTeamFindOverlay() {
+                            const overlay = document.getElementById('teamFindOverlay');
+                            const timer = document.getElementById('teamFindTimer');
+                            overlay.style.display = 'flex';
+                            
+                            let seconds = 30;
+                            const interval = setInterval(() => {
+                                seconds--;
+                                timer.innerText = seconds;
+                                if (seconds <= 0) {
+                                    clearInterval(interval);
+                                    overlay.style.display = 'none';
+                                }
+                            }, 1000);
+                        }
+
+                        async function teamFinden() {
+                            const btn = document.getElementById('teamFindButton');
+                            btn.disabled = true;
+                            try {
+                                const response = await fetch('/api/team-find', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                    body: 'email=' + encodeURIComponent(userEmail)
+                                });
+                                const result = await response.json();
+                                if (result.status === 'ok') {
+                                    startCooldown(180000); // 3 mins
+                                } else if (result.status === 'cooldown') {
+                                    alert("Cooldown aktiv!");
+                                }
+                            } catch(e) { btn.disabled = false; }
+                        }
+
+                        function startCooldown(ms) {
+                            const btn = document.getElementById('teamFindButton');
+                            btn.disabled = true;
+                            let remaining = ms;
+                            const interval = setInterval(() => {
+                                remaining -= 1000;
+                                if (remaining <= 0) {
+                                    clearInterval(interval);
+                                    btn.disabled = false;
+                                    btn.innerText = "TEAM FINDEN";
+                                } else {
+                                    const mins = Math.floor(remaining / 60000);
+                                    const secs = Math.floor((remaining % 60000) / 1000);
+                                    btn.innerText = "COOLDOWN (" + mins + ":" + (secs < 10 ? "0" : "") + secs + ")";
+                                }
+                            }, 1000);
                         }
 
                         function triggerMissionGlitch() {
@@ -578,7 +652,6 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                                 (u.linkedin ? "URL:" + u.linkedin + "\n" : "") +
                                 "END:VCARD";
                             
-                            // Send API call to track download for badge
                             try {
                                 await fetch('/api/vcard-downloaded', {
                                     method: 'POST',
@@ -595,13 +668,30 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                             a.click();
                         }
 
-                        document.addEventListener('DOMContentLoaded', setupTeamWebSocket);
+                        document.addEventListener('DOMContentLoaded', () => {
+                            setupTeamWebSocket();
+                            const initialCooldown = $cooldownMs;
+                            if (initialCooldown > 0) startCooldown(initialCooldown);
+                        });
                     """)
                 }
             }
         }
     ) {
+        div("team-find-overlay") {
+            id = "teamFindOverlay"
+            h1 { +"DEIN TEAM SUCHT DICH!" }
+            div("team-find-timer") { id = "teamFindTimer"; +"30" }
+        }
+
         div("container") {
+            button(type = ButtonType.button) {
+                id = "teamFindButton"
+                style = "margin-bottom: 20px; font-size: 1.5rem;"
+                onClick = "teamFinden()"
+                +"TEAM FINDEN"
+            }
+
             h1 { +"Dein Team" }
             h2("accent-text") { +teamName }
 

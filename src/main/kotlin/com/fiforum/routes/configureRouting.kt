@@ -13,7 +13,8 @@ fun Application.configureRouting() {
         adminRoutes()
         
         webSocket("/matching-ws") {
-            MatchingSocketService.addSession(this)
+            val teamId = call.request.queryParameters["teamId"]?.toIntOrNull()
+            MatchingSocketService.addSession(this, teamId)
             try {
                 for (frame in incoming) {
                     // Just keep connection alive
