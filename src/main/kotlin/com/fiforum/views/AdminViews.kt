@@ -21,16 +21,20 @@ fun HTML.adminDashboard(
                         function filterUsers() {
                             const search = document.getElementById('userSearch').value.toLowerCase();
                             const company = document.getElementById('companyFilter').value;
-                            const interest = document.getElementById('interestFilter').value;
+                            const hobby = document.getElementById('hobbyFilter').value;
+                            const tech = document.getElementById('techFilter').value;
+                            const travel = document.getElementById('travelFilter').value;
+                            const fuel = document.getElementById('fuelFilter').value;
 
                             const filtered = allUsers.filter(u => {
                                 const matchesSearch = u.name.toLowerCase().includes(search) || u.email.toLowerCase().includes(search);
                                 const matchesCompany = company === "" || u.company === company;
-                                const matchesInterest = interest === "" || 
-                                    u.hobby === interest || u.tech === interest || u.travel === interest || 
-                                    u.work === interest || u.coffee === interest || u.after === interest || u.fuel === interest;
+                                const matchesHobby = hobby === "" || u.hobby === hobby;
+                                const matchesTech = tech === "" || u.tech === tech;
+                                const matchesTravel = travel === "" || u.travel === travel;
+                                const matchesFuel = fuel === "" || u.fuel === fuel;
                                 
-                                return matchesSearch && matchesCompany && matchesInterest;
+                                return matchesSearch && matchesCompany && matchesHobby && matchesTech && matchesTravel && matchesFuel;
                             });
 
                             const container = document.getElementById('userListContainer');
@@ -41,7 +45,7 @@ fun HTML.adminDashboard(
                                 <div class="card" style="margin-bottom: 5px; padding: 10px; font-size: 0.8rem;">
                                     <b class="accent-text">${"$"}{u.name}</b> (${"$"}{u.company})<br/>
                                     <small style="color: #888;">${"$"}{u.email}</small><br/>
-                                    <small>${"$"}{u.hobby} | ${"$"}{u.tech} | ${"$"}{u.travel}</small>
+                                    <small>${"$"}{u.hobby} | ${"$"}{u.tech} | ${"$"}{u.travel} | ${"$"}{u.fuel}</small>
                                 </div>
                             `).join('');
                         }
@@ -83,19 +87,48 @@ fun HTML.adminDashboard(
                     select { 
                         id = "companyFilter"; onChange = "filterUsers()"
                         option { value = ""; +"Alle Unternehmen" }
-                        allUsers.map { it.company }.distinct().filter { it.isNotBlank() }.forEach {
+                        allUsers.map { it.company }.distinct().filter { it.isNotBlank() }.sorted().forEach {
                             option { value = it; +it }
                         }
                     }
                 }
                 div("input-group") {
-                    label { +"Interesse / Merkmal" }
-                    select {
-                        id = "interestFilter"; onChange = "filterUsers()"
-                        option { value = ""; +"Alle Merkmale" }
-                        val allTraits = allUsers.flatMap { listOf(it.hobby, it.techInterest, it.travel, it.workstyle, it.coffeeTalk, it.afterWork, it.fuel) }.distinct().filter { it.isNotBlank() }.sorted()
-                        allTraits.forEach { trait ->
-                            option { value = trait; +trait }
+                    label { +"Hobby" }
+                    select { 
+                        id = "hobbyFilter"; onChange = "filterUsers()"
+                        option { value = ""; +"Alle Hobbies" }
+                        allUsers.map { it.hobby }.distinct().filter { it.isNotBlank() }.sorted().forEach {
+                            option { value = it; +it }
+                        }
+                    }
+                }
+                div("input-group") {
+                    label { +"Tech-Thema" }
+                    select { 
+                        id = "techFilter"; onChange = "filterUsers()"
+                        option { value = ""; +"Alle Themen" }
+                        allUsers.map { it.techInterest }.distinct().filter { it.isNotBlank() }.sorted().forEach {
+                            option { value = it; +it }
+                        }
+                    }
+                }
+                div("input-group") {
+                    label { +"Reiseziel" }
+                    select { 
+                        id = "travelFilter"; onChange = "filterUsers()"
+                        option { value = ""; +"Alle Ziele" }
+                        allUsers.map { it.travel }.distinct().filter { it.isNotBlank() }.sorted().forEach {
+                            option { value = it; +it }
+                        }
+                    }
+                }
+                div("input-group") {
+                    label { +"Büro-Treibstoff" }
+                    select { 
+                        id = "fuelFilter"; onChange = "filterUsers()"
+                        option { value = ""; +"Alle Treibstoffe" }
+                        allUsers.map { it.fuel }.distinct().filter { it.isNotBlank() }.sorted().forEach {
+                            option { value = it; +it }
                         }
                     }
                 }
