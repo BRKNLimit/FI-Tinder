@@ -647,7 +647,7 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String) {
 
                                 ctx.fillStyle = '#333';
                                 ctx.font = '10px VT323';
-                                ctx.fillText('MATCHMAKER // CONVENTION_EDITION_2026', 20, 230);
+                                ctx.fillText('MATCHMAKER // FI_FORUM_2026', 20, 230);
                                 ctx.fillText('UID: ' + btoa(user.name).substring(0,8).toUpperCase(), 320, 230);
                             }
                         }
