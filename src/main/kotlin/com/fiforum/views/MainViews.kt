@@ -125,13 +125,15 @@ fun HTML.registrationPage() {
 }
 
 fun HTML.waitingPage(name: String, waitingCount: Long, email: String) {
-    layout("Waiting // Matchmaker") {
-        head {
+    layout(
+        title = "Waiting // Matchmaker",
+        headContent = {
             meta {
                 httpEquiv = "refresh"
                 content = "3"
             }
         }
+    ) {
         div("container") {
             h1 { +"Hallo, $name" }
             p { +"Du bist registriert. Das Matching hat noch nicht begonnen." }

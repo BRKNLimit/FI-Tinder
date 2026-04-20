@@ -2,9 +2,10 @@ package com.fiforum.views
 
 import kotlinx.html.*
 
-fun HTML.layout(title: String, content: FlowContent.() -> Unit) {
+fun HTML.layout(title: String, headContent: HEAD.() -> Unit = {}, content: FlowContent.() -> Unit) {
     head {
         title(title)
+        headContent()
         link(href = "https://fonts.googleapis.com/css2?family=VT323&family=Inter:wght@400;700&display=swap", rel = "stylesheet")
         style {
             unsafe {
