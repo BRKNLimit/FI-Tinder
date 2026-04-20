@@ -3,10 +3,41 @@ package com.fiforum.views
 import com.fiforum.models.UserData
 import kotlinx.html.*
 
-fun HTML.registrationPage(isLaunched: Boolean = false) {
-    layout("Registration // Matchmaker") {
+fun HTML.loginRegisterPage(error: String? = null) {
+    layout("Access // Matchmaker") {
         div("container") {
-            h1 { +"Matchmaker" }
+            h1 { +"Matchmaker Access" }
+            p { +"Bitte gib deine Email und ein Passwort ein." }
+            p { style = "font-size: 0.8rem; color: var(--text-secondary);"; +"Falls du noch nicht registriert bist, wird ein neuer Account erstellt." }
+
+            if (error != null) {
+                div("card") {
+                    style = "border-color: var(--accent); color: var(--accent); margin-bottom: 20px;"
+                    +error
+                }
+            }
+
+            form(action = "/auth", method = FormMethod.post) {
+                div("input-group") {
+                    label { +"Email" }
+                    input(type = InputType.text) { name = "email"; required = true }
+                }
+                div("input-group") {
+                    label { +"Passwort" }
+                    input(type = InputType.password) { name = "password"; required = true }
+                }
+                button(type = ButtonType.submit) { +"Weiter" }
+            }
+        }
+    }
+}
+
+fun HTML.registrationPage(email: String, isLaunched: Boolean = false) {
+    layout("Information // Matchmaker") {
+        div("container") {
+            h1 { +"Deine Infos" }
+            p { +"Eingeloggt als: "; b { +email } }
+            
             if (isLaunched) {
                 div("card") {
                     style = "border-color: var(--accent); margin-bottom: 20px;"
@@ -18,6 +49,8 @@ fun HTML.registrationPage(isLaunched: Boolean = false) {
             }
             
             form(action = "/register", method = FormMethod.post) {
+                input(type = InputType.hidden) { name = "email"; value = email }
+                
                 div("input-group") {
                     label { +"Profilbild (Optional)" }
                     input(type = InputType.file) { 
@@ -46,10 +79,6 @@ fun HTML.registrationPage(isLaunched: Boolean = false) {
                     input(type = InputType.text) { name = "xingUrl"; placeholder = "https://xing.com/profile/..." }
                 }
 
-                div("input-group") {
-                    label { +"Email (Login Identifier)" }
-                    input(type = InputType.text) { name = "email"; required = true }
-                }
                 div("input-group") {
                     label { +"Vollständiger Name" }
                     input(type = InputType.text) { name = "name"; required = true }

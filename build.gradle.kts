@@ -34,6 +34,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-dao:0.50.0")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.50.0")
     implementation("org.xerial:sqlite-jdbc:3.45.2.0")
+    implementation("org.mindrot:jbcrypt:0.4")
 }
 
 tasks.test {

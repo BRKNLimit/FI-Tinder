@@ -3,7 +3,7 @@ package com.fiforum.routes
 import com.fiforum.models.UserData
 import com.fiforum.models.Users
 import com.fiforum.services.MatchingService
-import com.fiforum.views.matchingFinishedGeneralPage
+import com.fiforum.views.loginRegisterPage
 import com.fiforum.views.registrationPage
 import com.fiforum.views.profilePage
 import io.ktor.server.application.*
@@ -15,10 +15,47 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.mindrot.jbcrypt.BCrypt
 
 fun Route.mainRoutes() {
     get("/") {
-        call.respondHtml { registrationPage(MatchingService.isLaunched) }
+        call.respondHtml { loginRegisterPage() }
+    }
+
+    post("/auth") {
+        val params = call.receiveParameters()
+        val emailAddr = params["email"]?.lowercase()?.trim() ?: return@post call.respondRedirect("/")
+        val password = params["password"] ?: ""
+
+        val user = transaction {
+            Users.select { Users.email eq emailAddr }.singleOrNull()
+        }
+
+        if (user == null) {
+            // New User: Create account with password hash
+            transaction {
+                Users.insert {
+                    it[email] = emailAddr
+                    it[passwordHash] = BCrypt.hashpw(password, BCrypt.gensalt())
+                }
+            }
+            call.respondHtml { registrationPage(emailAddr, MatchingService.isLaunched) }
+        } else {
+            // Existing User: Verify password
+            val hash = user[Users.passwordHash]
+            if (BCrypt.checkpw(password, hash)) {
+                // Login successful
+                if (user[Users.name].isBlank()) {
+                    // Authenticated but info missing
+                    call.respondHtml { registrationPage(emailAddr, MatchingService.isLaunched) }
+                } else {
+                    // Fully registered
+                    call.respondRedirect("/myteam?email=$emailAddr")
+                }
+            } else {
+                call.respondHtml { loginRegisterPage("Ungültiges Passwort für diese Email.") }
+            }
+        }
     }
 
     get("/profile") {
@@ -57,44 +94,40 @@ fun Route.mainRoutes() {
         val emailAddr = params["email"] ?: return@post call.respondRedirect("/")
         
         transaction {
-            val exists = Users.select { Users.email eq emailAddr }.count() > 0
-            if (!exists) {
-                Users.insert {
-                    it[email] = emailAddr
-                    it[name] = params["name"] ?: "Anonymous"
-                    it[company] = params["company"] ?: ""
-                    it[hobby] = params["hobby"] ?: ""
-                    it[techInterest] = params["techInterest"] ?: ""
-                    it[travel] = params["travel"] ?: ""
-                    it[workstyle] = params["workstyle"] ?: ""
-                    it[coffeeTalk] = params["coffeeTalk"] ?: ""
-                    it[afterWork] = params["afterWork"] ?: ""
-                    it[popculture] = ""
-                    it[fuel] = params["fuel"] ?: ""
-                    it[linkedinUrl] = params["linkedinUrl"]
-                    it[xingUrl] = params["xingUrl"]
-                    it[profilePicture] = params["profilePicture"]
-                }
-                
-                if (MatchingService.isLaunched) {
-                    val latecomer = UserData(
-                        emailAddr, 
-                        params["name"] ?: "Anonymous",
-                        params["company"] ?: "",
-                        params["hobby"] ?: "",
-                        params["techInterest"] ?: "",
-                        params["travel"] ?: "",
-                        params["workstyle"] ?: "",
-                        params["coffeeTalk"] ?: "",
-                        params["afterWork"] ?: "",
-                        "",
-                        params["fuel"] ?: "",
-                        params["linkedinUrl"],
-                        params["xingUrl"],
-                        params["profilePicture"]
-                    )
-                    MatchingService.assignLatecomer(latecomer)
-                }
+            Users.update({ Users.email eq emailAddr }) {
+                it[name] = params["name"] ?: "Anonymous"
+                it[company] = params["company"] ?: ""
+                it[hobby] = params["hobby"] ?: ""
+                it[techInterest] = params["techInterest"] ?: ""
+                it[travel] = params["travel"] ?: ""
+                it[workstyle] = params["workstyle"] ?: ""
+                it[coffeeTalk] = params["coffeeTalk"] ?: ""
+                it[afterWork] = params["afterWork"] ?: ""
+                it[popculture] = ""
+                it[fuel] = params["fuel"] ?: ""
+                it[linkedinUrl] = params["linkedinUrl"]
+                it[xingUrl] = params["xingUrl"]
+                it[profilePicture] = params["profilePicture"]
+            }
+            
+            if (MatchingService.isLaunched) {
+                val latecomer = UserData(
+                    emailAddr, 
+                    params["name"] ?: "Anonymous",
+                    params["company"] ?: "",
+                    params["hobby"] ?: "",
+                    params["techInterest"] ?: "",
+                    params["travel"] ?: "",
+                    params["workstyle"] ?: "",
+                    params["coffeeTalk"] ?: "",
+                    params["afterWork"] ?: "",
+                    "",
+                    params["fuel"] ?: "",
+                    params["linkedinUrl"],
+                    params["xingUrl"],
+                    params["profilePicture"]
+                )
+                MatchingService.assignLatecomer(latecomer)
             }
         }
         call.respondRedirect("/myteam?email=$emailAddr")
