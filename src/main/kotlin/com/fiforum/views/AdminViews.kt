@@ -190,16 +190,25 @@ fun HTML.adminDashboard(
                         div {
                             members.forEach { m ->
                                 div {
-                                    style = "margin-bottom: 10px; border-bottom: 1px dotted #333; padding-bottom: 5px;"
-                                    b { +m.name } ; span { +" (${m.company})" }
+                                    style = "margin-bottom: 10px; border-bottom: 1px dotted #333; padding-bottom: 5px; display: flex; gap: 15px; align-items: flex-start;"
+                                    if (m.profilePicture != null) {
+                                        img { src = m.profilePicture; style = "width: 40px; height: 40px; object-fit: cover; border: 1px solid #333;" }
+                                    }
                                     div {
-                                        if (m.hobby.isNotBlank()) span("badge ${if (sharedHobby.contains(m.hobby)) "badge-matched" else ""}") { +m.hobby }
-                                        if (m.techInterest.isNotBlank()) span("badge ${if (sharedTech.contains(m.techInterest)) "badge-matched" else ""}") { +m.techInterest }
-                                        if (m.travel.isNotBlank()) span("badge ${if (sharedTravel.contains(m.travel)) "badge-matched" else ""}") { +m.travel }
-                                        if (m.workstyle.isNotBlank()) span("badge ${if (sharedWork.contains(m.workstyle)) "badge-matched" else ""}") { +m.workstyle }
-                                        if (m.coffeeTalk.isNotBlank()) span("badge ${if (sharedCoffee.contains(m.coffeeTalk)) "badge-matched" else ""}") { +m.coffeeTalk }
-                                        if (m.afterWork.isNotBlank()) span("badge ${if (sharedAfter.contains(m.afterWork)) "badge-matched" else ""}") { +m.afterWork }
-                                        if (m.fuel.isNotBlank()) span("badge ${if (sharedFuel.contains(m.fuel)) "badge-matched" else ""}") { +m.fuel }
+                                        b { +m.name } ; span { +" (${m.company})" }
+                                        div {
+                                            if (m.linkedinUrl?.isNotBlank() == true) span("badge") { style = "font-size: 0.6rem;"; +"LI" }
+                                            if (m.xingUrl?.isNotBlank() == true) span("badge") { style = "font-size: 0.6rem;"; +"X" }
+                                        }
+                                        div {
+                                            if (m.hobby.isNotBlank()) span("badge ${if (sharedHobby.contains(m.hobby)) "badge-matched" else ""}") { +m.hobby }
+                                            if (m.techInterest.isNotBlank()) span("badge ${if (sharedTech.contains(m.techInterest)) "badge-matched" else ""}") { +m.techInterest }
+                                            if (m.travel.isNotBlank()) span("badge ${if (sharedTravel.contains(m.travel)) "badge-matched" else ""}") { +m.travel }
+                                            if (m.workstyle.isNotBlank()) span("badge ${if (sharedWork.contains(m.workstyle)) "badge-matched" else ""}") { +m.workstyle }
+                                            if (m.coffeeTalk.isNotBlank()) span("badge ${if (sharedCoffee.contains(m.coffeeTalk)) "badge-matched" else ""}") { +m.coffeeTalk }
+                                            if (m.afterWork.isNotBlank()) span("badge ${if (sharedAfter.contains(m.afterWork)) "badge-matched" else ""}") { +m.afterWork }
+                                            if (m.fuel.isNotBlank()) span("badge ${if (sharedFuel.contains(m.fuel)) "badge-matched" else ""}") { +m.fuel }
+                                        }
                                     }
                                 }
                             }

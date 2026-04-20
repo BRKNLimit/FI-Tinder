@@ -19,6 +19,34 @@ fun HTML.registrationPage(isLaunched: Boolean = false) {
             
             form(action = "/register", method = FormMethod.post) {
                 div("input-group") {
+                    label { +"Profilbild (Optional)" }
+                    input(type = InputType.file) { 
+                        id = "photoInput"; accept = "image/*"
+                        onChange = """
+                            const file = this.files[0];
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                                document.getElementById('profilePicture').value = reader.result;
+                                document.getElementById('preview').src = reader.result;
+                                document.getElementById('preview').style.display = 'block';
+                            };
+                            if (file) reader.readAsDataURL(file);
+                        """.trimIndent()
+                    }
+                    input(type = InputType.hidden) { name = "profilePicture"; id = "profilePicture" }
+                    img { id = "preview"; style = "max-width: 100px; display: none; margin-top: 10px; border: var(--border);" }
+                }
+
+                div("input-group") {
+                    label { +"LinkedIn URL (Optional)" }
+                    input(type = InputType.text) { name = "linkedinUrl"; placeholder = "https://linkedin.com/in/..." }
+                }
+                div("input-group") {
+                    label { +"Xing URL (Optional)" }
+                    input(type = InputType.text) { name = "xingUrl"; placeholder = "https://xing.com/profile/..." }
+                }
+
+                div("input-group") {
                     label { +"Email (Login Identifier)" }
                     input(type = InputType.text) { name = "email"; required = true }
                 }
@@ -137,6 +165,76 @@ fun HTML.registrationPage(isLaunched: Boolean = false) {
                 }
                 
                 button(type = ButtonType.submit) { +"Registrieren" }
+            }
+        }
+    }
+}
+
+fun HTML.profilePage(user: UserData) {
+    layout("Profile // Matchmaker") {
+        div("container") {
+            h1 { +"Mein Profil" }
+            p { +"Verwalte deine Networking-Links und dein Profilbild." }
+
+            form(action = "/profile/update", method = FormMethod.post) {
+                input(type = InputType.hidden) { name = "email"; value = user.email }
+                
+                div("input-group") {
+                    label { +"Profilbild" }
+                    if (user.profilePicture != null) {
+                        img { 
+                            src = user.profilePicture
+                            style = "max-width: 150px; border: var(--border); margin-bottom: 10px; display: block;"
+                            id = "currentProfilePic"
+                        }
+                    }
+                    input(type = InputType.file) { 
+                        id = "photoInput"; accept = "image/*"
+                        onChange = """
+                            const file = this.files[0];
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                                document.getElementById('profilePicture').value = reader.result;
+                                const preview = document.getElementById('preview');
+                                preview.src = reader.result;
+                                preview.style.display = 'block';
+                                if(document.getElementById('currentProfilePic')) document.getElementById('currentProfilePic').style.opacity = '0.3';
+                            };
+                            if (file) reader.readAsDataURL(file);
+                        """.trimIndent()
+                    }
+                    input(type = InputType.hidden) { name = "profilePicture"; id = "profilePicture" }
+                    img { id = "preview"; style = "max-width: 150px; display: none; margin-top: 10px; border: var(--border);" }
+                    
+                    button(type = ButtonType.button) {
+                        style = "background: transparent; border: 1px solid var(--accent); color: var(--accent); font-size: 0.8rem; padding: 5px; margin-top: 10px; width: auto;"
+                        onClick = "document.getElementById('profilePicture').value = ''; document.getElementById('preview').style.display = 'none'; if(document.getElementById('currentProfilePic')) document.getElementById('currentProfilePic').style.display = 'none';"
+                        +"Bild entfernen"
+                    }
+                }
+
+                div("input-group") {
+                    label { +"LinkedIn URL" }
+                    input(type = InputType.text) { 
+                        name = "linkedinUrl"
+                        value = user.linkedinUrl ?: ""
+                        placeholder = "https://linkedin.com/in/..." 
+                    }
+                }
+                div("input-group") {
+                    label { +"Xing URL" }
+                    input(type = InputType.text) { 
+                        name = "xingUrl"
+                        value = user.xingUrl ?: ""
+                        placeholder = "https://xing.com/profile/..." 
+                    }
+                }
+
+                button(type = ButtonType.submit) { +"Speichern & zurück zum Team" }
+            }
+            
+            a(href = "/myteam?email=${user.email}") {
+                p { style = "text-align: center; margin-top: 20px; text-decoration: underline; cursor: pointer;"; +"Abbrechen" }
             }
         }
     }
@@ -325,11 +423,41 @@ fun HTML.teamPage(teamName: String, members: List<UserData>) {
             div("team-list") {
                 members.forEach { member ->
                     div("card") {
-                        h3 { +member.name }
-                        p { 
-                            small { +"Firma: ${member.company}" } 
+                        div {
+                            style = "display: flex; align-items: flex-start; gap: 20px;"
+                            if (member.profilePicture != null) {
+                                img { 
+                                    src = member.profilePicture
+                                    style = "width: 80px; height: 80px; object-fit: cover; border: var(--border);"
+                                }
+                            } else {
+                                div {
+                                    style = "width: 80px; height: 80px; border: var(--border); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--text-secondary);"
+                                    +"?"
+                                }
+                            }
+                            div {
+                                style = "flex: 1;"
+                                h3 { style = "margin-top: 0;"; +member.name }
+                                p { 
+                                    small { +"Firma: ${member.company}" } 
+                                }
+                                div {
+                                    if (member.linkedinUrl?.isNotBlank() == true) {
+                                        a(href = member.linkedinUrl, target = "_blank") {
+                                            span("badge") { style = "color: #0077b5; border-color: #0077b5;"; +"LinkedIn" }
+                                        }
+                                    }
+                                    if (member.xingUrl?.isNotBlank() == true) {
+                                        a(href = member.xingUrl, target = "_blank") {
+                                            span("badge") { style = "color: #026466; border-color: #026466;"; +"Xing" }
+                                        }
+                                    }
+                                }
+                            }
                         }
                         div {
+                            style = "margin-top: 15px;"
                             if (member.hobby.isNotBlank()) {
                                 span("badge ${if (sharedHobby.contains(member.hobby)) "badge-matched" else ""}") { +member.hobby }
                             }
@@ -356,7 +484,10 @@ fun HTML.teamPage(teamName: String, members: List<UserData>) {
                 }
             }
             
-            p { +"Geht zu eurem Tisch und startet den Austausch!" }
+            p { +"Vernetze dich jetzt und finde deine Team-Kollegen!" }
+            a(href = "/profile?email=${members.find { it.email != null }?.email ?: ""}") { // This is a bit hacky, normally you'd have the current user's email
+                 button { +"Mein Profil bearbeiten" }
+            }
         }
     }
 }

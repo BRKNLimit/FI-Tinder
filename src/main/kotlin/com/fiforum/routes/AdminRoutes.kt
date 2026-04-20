@@ -21,14 +21,22 @@ fun Route.adminRoutes() {
             val teamCount = TeamsTable.selectAll().count()
             
             val allUsers = Users.selectAll().map {
-                UserData(it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel])
+                UserData(
+                    it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
+                    it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
+                    it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture]
+                )
             }
 
             val teamsWithMembers = if (MatchingService.isLaunched) {
                 TeamsTable.selectAll().map { teamRow ->
                     val teamId = teamRow[TeamsTable.id]
                     val members = Users.select { Users.teamId eq teamId }.map {
-                        UserData(it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel])
+                        UserData(
+                            it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
+                            it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
+                            it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture]
+                        )
                     }
                     teamRow[TeamsTable.name] to members
                 }

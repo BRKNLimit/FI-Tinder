@@ -15,6 +15,12 @@ object Users : Table("users") {
     val popculture = varchar("popculture", 100)
     val fuel = varchar("fuel", 100)
     val teamId = integer("team_id").nullable()
+    
+    // Networking & Profile fields
+    val linkedinUrl = varchar("linkedinUrl", 255).nullable()
+    val xingUrl = varchar("xingUrl", 255).nullable()
+    val profilePicture = text("profilePicture").nullable() // Base64 storage
+    
     override val primaryKey = PrimaryKey(email)
 }
 
@@ -35,5 +41,8 @@ data class UserData(
     val coffeeTalk: String,
     val afterWork: String,
     val popculture: String,
-    val fuel: String
+    val fuel: String,
+    val linkedinUrl: String? = null,
+    val xingUrl: String? = null,
+    val profilePicture: String? = null
 )

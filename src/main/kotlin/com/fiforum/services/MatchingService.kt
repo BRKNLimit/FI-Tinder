@@ -66,7 +66,11 @@ object MatchingService {
 
         transaction {
             val allUsers = Users.selectAll().map {
-                UserData(it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel])
+                UserData(
+                    it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
+                    it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
+                    it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture]
+                )
             }
 
             if (allUsers.isEmpty()) return@transaction
@@ -208,7 +212,11 @@ object MatchingService {
 
             val candidateTeams = teams.map { tId ->
                 val members = Users.select { Users.teamId eq tId }.map {
-                    UserData(it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel])
+                    UserData(
+                        it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
+                        it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
+                        it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture]
+                    )
                 }
                 tId to members
             }
