@@ -1,0 +1,117 @@
+package com.fiforum.views
+
+import com.fiforum.models.UserData
+import kotlinx.html.*
+
+fun HTML.registrationPage() {
+    layout("Registration // Matchmaker") {
+        div("container") {
+            h1 { +"Matchmaker" }
+            p { +"Tritt der Community bei und finde dein perfektes Team." }
+            
+            form(action = "/register", method = FormMethod.post) {
+                div("input-group") {
+                    label { +"Email (Login Identifier)" }
+                    input(type = InputType.text) { name = "email"; required = true }
+                }
+                div("input-group") {
+                    label { +"Vollständiger Name" }
+                    input(type = InputType.text) { name = "name"; required = true }
+                }
+                div("input-group") {
+                    label { +"Unternehmen / Organisation" }
+                    input(type = InputType.text) { name = "company" }
+                }
+                div("input-group") {
+                    label { +"Hobby" }
+                    select {
+                        name = "hobby"
+                        option { +"Fußball" }; option { +"Kochen" }; option { +"Gaming" }
+                        option { +"Wandern" }; option { +"Lesen" }; option { +"Reisen" }
+                        option { +"Fotografie" }; option { +"Musik" }; option { +"Yoga" }; option { +"Malen" }
+                    }
+                }
+                div("input-group") {
+                    label { +"Tech-Interesse" }
+                    select {
+                        name = "techInterest"
+                        option { +"Kotlin" }; option { +"AI" }; option { +"Cloud" }
+                        option { +"Cyber Security" }; option { +"Blockchain" }; option { +"DevOps" }
+                        option { +"Frontend" }; option { +"Backend" }; option { +"Mobile" }; option { +"Data Science" }
+                    }
+                }
+                div("input-group") {
+                    label { +"Präferenz: Travel" }
+                    select { name = "travel"; option { +"Ja" }; option { +"Nein" } }
+                }
+                div("input-group") {
+                    label { +"Präferenz: Workstyle" }
+                    select { name = "workstyle"; option { +"Remote" }; option { +"Office" }; option { +"Hybrid" } }
+                }
+                
+                button(type = ButtonType.submit) { +"Registrieren" }
+            }
+        }
+    }
+}
+
+fun HTML.waitingPage(name: String) {
+    layout("Waiting // Matchmaker") {
+        div("container") {
+            h1 { +"Hallo, $name" }
+            p { +"Du bist registriert. Das Matching hat noch nicht begonnen." }
+            div {
+                span("spinner")
+                span { +" Bitte warten..." }
+            }
+            p {
+                small { +"Sobald der Admin den Prozess startet, erfährst du hier dein Team." }
+            }
+            a(href = "/") { button { +"Refreshen" } }
+        }
+    }
+}
+
+fun HTML.teamPage(teamName: String, members: List<UserData>) {
+    layout("Your Team // Matchmaker") {
+        div("container") {
+            h1 { +"Dein Team" }
+            h2("accent-text") { +teamName }
+            
+            div("team-list") {
+                members.forEach { member ->
+                    div("card") {
+                        h3 { +member.name }
+                        p { 
+                            small { +"Firma: ${member.company}" } 
+                        }
+                        div {
+                            span("badge") { +member.hobby }
+                            span("badge") { +member.techInterest }
+                        }
+                    }
+                }
+            }
+            
+            p { +"Geht zu eurem Tisch und startet den Austausch!" }
+        }
+    }
+}
+
+fun HTML.matchingFinishedGeneralPage() {
+    layout("Matching Finished // Matchmaker") {
+        div("container") {
+            h1 { +"Matching Beendet" }
+            p { +"Der Registrierungsprozess ist abgeschlossen." }
+            p { +"Bitte logge dich mit deiner Email ein, um dein Team zu sehen." }
+            
+            form(action = "/login", method = FormMethod.post) {
+                div("input-group") {
+                    label { +"Email" }
+                    input(type = InputType.text) { name = "email"; required = true }
+                }
+                button(type = ButtonType.submit) { +"Login" }
+            }
+        }
+    }
+}
