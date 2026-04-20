@@ -124,10 +124,81 @@ object MatchingService {
     }
 
     private fun generateCleverTeamName(t1: String?, t2: String?): String {
-        if (t1 == null) return "Team Allrounder"
-        if (t2 == null) return "Team $t1"
+        if (t1 == null) return "The Allrounders"
+        if (t2 == null) return "The $t1 Squad"
 
-        return "Team $t1 & $t2"
+        // STEP 1: SYNERGY OVERRIDES
+        val sportGroup = setOf("Fußball", "Wandern", "Yoga", "Gym / Fitness", "Teamsport", "ab zum Sport", "Sportergebnisse")
+        val gamingGroup = setOf("Gaming", "Zocken", "Gaming News")
+        val foodGroup = setOf("Kochen", "Fancy kochen", "Snacks")
+        val travelGroup = setOf("Reisen", "Urlaubspläne", "Asien", "Nordamerika", "Südamerika", "Südeuropa", "Skandinavien", "Hauptsache warm", "Hauptsache Action", "Australien", "Afrika", "Städtetrip", "Roadtrip")
+        val chillGroup = setOf("Balkonien", "ab auf die Couch", "Filme und Serien", "Tee", "Wasser (stay hydrated)")
+
+        val synergyNames = when {
+            t1 in sportGroup && t2 in sportGroup -> listOf("The Athletics", "The Sweat Equity", "The Varsity Squad")
+            t1 in gamingGroup && t2 in gamingGroup -> listOf("The Tryhards", "The Cyber Syndicate", "The Final Bosses")
+            t1 in foodGroup && t2 in foodGroup -> listOf("The Culinary Cartel", "The Flavor Squad", "The Tastemakers")
+            t1 in travelGroup && t2 in travelGroup -> listOf("The Globetrotters", "The Mileage Club", "The Wayfarers")
+            t1 in chillGroup && t2 in chillGroup -> listOf("The Zen Masters", "The Couch Cartel", "The Low-Battery Squad")
+            else -> null
+        }
+
+        if (synergyNames != null) return synergyNames.random()
+
+        // STEP 2: WORD MAPPING
+        val prefixes = mapOf(
+            "Kaffee" to "Caffeine", "Energy Drinks" to "High-Voltage", "Mate" to "Mate",
+            "Spezi / Cola" to "Sugar", "Tee" to "Zen", "Wasser (stay hydrated)" to "Hydro",
+            "Snacks" to "Crumb", "Remote" to "Pajama", "im Office" to "Desk",
+            "Hybrid" to "Flex", "möglichst früh" to "Early-Bird", "möglichst spät" to "Night-Owl",
+            "Programmieren" to "Code", "AI" to "Prompt", "Cloud" to "Cloud",
+            "Cyber Security" to "Firewall", "BlockChain" to "Crypto", "Devops" to "Pipeline",
+            "Data Science" to "Data", "FinTech" to "Cashflow", "Agile/Scrum" to "Sprint",
+            "Business Intelligence" to "Dashboard", "UX/UI Design" to "Pixel",
+            "Projektmanagement" to "Gantt", "E-Commerce" to "Cart"
+        )
+
+        val suffixes = mapOf(
+            "Fußball" to "Strikers", "Wandern" to "Trailblazers", "Kochen" to "Gourmets",
+            "Gaming" to "Looters", "Lesen" to "Bookworms", "Reisen" to "Nomads",
+            "Fotografie" to "Focus-Ninjas", "Musik" to "Beatmakers", "Yoga" to "Gurus",
+            "Malen" to "Creators", "Gym / Fitness" to "Lifters", "Teamsport" to "Team-Players",
+            "Asien" to "Far-East Fans", "Nordamerika" to "Overseas Explorers",
+            "Südamerika" to "Latino Lovers", "Südeuropa" to "Siesta Seekers",
+            "Skandinavien" to "Nordic Hunters", "Hauptsache warm" to "Sun Chasers",
+            "Hauptsache Action" to "Adrenaline Junkies", "Australien" to "Down-Under Dudes",
+            "Afrika" to "Safari Squad", "Städtetrip" to "Asphalt Cowboys",
+            "Roadtrip" to "Mile Makers", "Balkonien" to "Homebodies",
+            "Filme und Serien" to "Binge-Watchers", "Tech Gossip" to "Rumor Millers",
+            "Krypto und Finanzen" to "Brokers", "Sportergebnisse" to "Tacticians",
+            "Haustier und Alltag" to "Pet-Fluencers", "Urlaubspläne" to "Tour Guides",
+            "Gaming News" to "Nerds", "Lokale Events" to "Party Planners",
+            "Studium & Berufsschule" to "Campus Legends", "Feierabendbier" to "Tap Heroes",
+            "ab zum Sport" to "Endorphin Junkies", "ab auf die Couch" to "Couch Potatoes",
+            "Side Hustle" to "Hustlers", "Fancy kochen" to "Star Chefs",
+            "Freunde treffen" to "Socializers", "Zocken" to "Boss Slayers"
+        )
+
+        // STEP 3: COMBINATION RULES
+        val p1 = prefixes[t1]
+        val p2 = prefixes[t2]
+        val s1 = suffixes[t1]
+        val s2 = suffixes[t2]
+
+        return when {
+            // Rule 1: Prefix + Suffix
+            p1 != null && s2 != null -> "The $p1 $s2"
+            p2 != null && s1 != null -> "The $p2 $s1"
+            
+            // Rule 2: Prefix + Prefix
+            p1 != null && p2 != null -> "The $p1-$p2 ${listOf("Squad", "Faction").random()}"
+            
+            // Rule 3: Suffix + Suffix
+            s1 != null && s2 != null -> "The $s1-$s2"
+            
+            // Fallback
+            else -> "The $t1 & $t2 Synergy"
+        }
     }
 
     fun assignLatecomer(latecomer: UserData): Int? {
