@@ -1,6 +1,7 @@
 package com.fiforum.routes
 
 import com.fiforum.models.TeamsTable
+import com.fiforum.models.UserData
 import com.fiforum.models.Users
 import com.fiforum.services.AdminService
 import com.fiforum.services.MatchingService
@@ -10,17 +11,33 @@ import io.ktor.server.html.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Route.adminRoutes() {
     get("/admin") {
-        var userCount = 0L
-        var teamCount = 0L
-        transaction {
-            userCount = Users.selectAll().count()
-            teamCount = TeamsTable.selectAll().count()
+        val data = transaction {
+            val userCount = Users.selectAll().count()
+            val teamCount = TeamsTable.selectAll().count()
+            
+            val teamsWithMembers = if (MatchingService.isLaunched) {
+                TeamsTable.selectAll().map { teamRow ->
+                    val teamId = teamRow[TeamsTable.id]
+                    val members = Users.select { Users.teamId eq teamId }.map {
+                        UserData(it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel])
+                    }
+                    teamRow[TeamsTable.name] to members
+                }
+            } else {
+                emptyList()
+            }
+            
+            Triple(userCount, teamCount, teamsWithMembers)
         }
-        call.respondHtml { adminDashboard(userCount, teamCount, MatchingService.isLaunched) }
+        
+        call.respondHtml { 
+            adminDashboard(data.first, data.second, MatchingService.isLaunched, data.third) 
+        }
     }
 
     post("/admin/generate") {
