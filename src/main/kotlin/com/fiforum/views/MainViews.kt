@@ -694,29 +694,13 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                                 ctx.font = '24px VT323';
                                 ctx.fillText(user.name.toUpperCase(), 120, 60);
                                 
-                                ctx.font = '14px Inter';
+                                ctx.font = '16px VT323';
                                 ctx.fillStyle = '#a0a0a0';
                                 ctx.fillText(user.company.toUpperCase(), 120, 85);
                                 
                                 ctx.fillStyle = '#ff0000';
-                                ctx.font = '20px VT323';
+                                ctx.font = '22px VT323';
                                 ctx.fillText(user.team.toUpperCase(), 120, 120);
-
-                                // Generate QR Code for VCard
-                                const vcardData = "BEGIN:VCARD\nVERSION:3.0\nFN:" + user.name + "\nORG:" + user.company + "\nTEL:" + (user.phoneWork || user.phonePrivate || "") + "\nEMAIL:" + user.email + "\nEND:VCARD";
-                                const qr = qrcode(0, 'M');
-                                qr.addData(vcardData);
-                                qr.make();
-                                
-                                // Draw QR Code on Canvas
-                                const qrSize = 80;
-                                const qrImg = new Image();
-                                qrImg.onload = () => {
-                                    ctx.fillStyle = '#fff';
-                                    ctx.fillRect(300, 40, qrSize + 10, qrSize + 10); // White background for QR
-                                    ctx.drawImage(qrImg, 305, 45, qrSize, qrSize);
-                                };
-                                qrImg.src = qr.createDataURL(4);
 
                                 ctx.fillStyle = '#333';
                                 ctx.font = '10px VT323';
