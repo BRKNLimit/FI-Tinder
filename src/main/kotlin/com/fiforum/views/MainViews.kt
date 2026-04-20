@@ -244,14 +244,48 @@ fun HTML.waitingPage(name: String, waitingUsers: List<UserData>, email: String) 
     layout(
         title = "Waiting // Matchmaker",
         headContent = {
-            meta {
-                httpEquiv = "refresh"
-                content = "5" // Increased to 5s to allow for visual appreciation
-            }
             script {
                 unsafe {
                     raw("""
                         const waitingUsers = ${waitingUsers.map { "{ name: '${it.name}', company: '${it.company}', hobby: '${it.hobby}', tech: '${it.techInterest}', travel: '${it.travel}', work: '${it.workstyle}', coffee: '${it.coffeeTalk}', after: '${it.afterWork}', fuel: '${it.fuel}' }" }};
+                        const userEmail = '$email';
+                        
+                        // --- WebSocket Reveal Logic ---
+                        function setupWebSocket() {
+                            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                            const ws = new WebSocket(protocol + '//' + window.location.host + '/matching-ws');
+                            
+                            ws.onmessage = (event) => {
+                                if (event.data === 'MATCHING_FINISHED') {
+                                    triggerGlitchReveal();
+                                }
+                            };
+                            
+                            ws.onclose = () => {
+                                setTimeout(setupWebSocket, 2000); // Reconnect if dropped
+                            };
+                        }
+
+                        function triggerGlitchReveal() {
+                            const overlay = document.getElementById('glitchOverlay');
+                            const status = document.getElementById('glitchStatus');
+                            overlay.style.display = 'flex';
+                            
+                            let progress = 0;
+                            const interval = setInterval(() => {
+                                progress += Math.random() * 15;
+                                if (progress >= 100) {
+                                    progress = 100;
+                                    clearInterval(interval);
+                                    setTimeout(() => {
+                                        window.location.href = '/myteam?email=' + userEmail;
+                                    }, 500);
+                                }
+                                status.innerText = Math.floor(progress) + '%';
+                            }, 100);
+                        }
+
+                        document.addEventListener('DOMContentLoaded', setupWebSocket);
                     """)
                 }
             }
@@ -259,17 +293,17 @@ fun HTML.waitingPage(name: String, waitingUsers: List<UserData>, email: String) 
     ) {
         div("container") {
             h1 { +"Hallo, $name" }
-            p { +"Du bist registriert. Das Matching hat noch nicht begonnen." }
+            p { +"Verbindung zum Netzwerk hergestellt. Warte auf Matching-Signal..." }
             
             div("card") {
-                style = "position: relative; height: 300px; overflow: hidden; background: #050505; border-style: solid; border-color: #222;"
+                style = "position: relative; height: 350px; overflow: hidden; background: #000; border: 1px solid #333; cursor: crosshair;"
                 canvas {
                     id = "connectionCanvas"
-                    style = "width: 100%; height: 100%;"
+                    style = "width: 100%; height: 100%; touch-action: none;"
                 }
                 div {
-                    style = "position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 5px; font-size: 0.6rem; color: var(--text-secondary);"
-                    +"Matching-Nodes: ${waitingUsers.size}"
+                    style = "position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 5px; font-size: 0.6rem; color: var(--accent); font-family: 'VT323';"
+                    +"INTERACTIVE_NODES: ${waitingUsers.size}"
                 }
             }
 
@@ -279,16 +313,31 @@ fun HTML.waitingPage(name: String, waitingUsers: List<UserData>, email: String) 
                         const canvas = document.getElementById('connectionCanvas');
                         const ctx = canvas.getContext('2d');
                         let width, height;
+                        let mouse = { x: -1000, y: -1000, active: false };
 
                         function resize() {
-                            width = canvas.offsetWidth;
-                            height = canvas.height = canvas.offsetHeight;
-                            canvas.width = width;
+                            const rect = canvas.getBoundingClientRect();
+                            width = canvas.width = rect.width;
+                            height = canvas.height = rect.height;
                         }
                         window.onresize = resize;
                         resize();
 
-                        // Deterministic seed based on email
+                        canvas.addEventListener('mousemove', e => {
+                            const rect = canvas.getBoundingClientRect();
+                            mouse.x = e.clientX - rect.left;
+                            mouse.y = e.clientY - rect.top;
+                            mouse.active = true;
+                        });
+                        canvas.addEventListener('touchstart', e => {
+                            const rect = canvas.getBoundingClientRect();
+                            mouse.x = e.touches[0].clientX - rect.left;
+                            mouse.y = e.touches[0].clientY - rect.top;
+                            mouse.active = true;
+                        });
+                        canvas.addEventListener('touchend', () => mouse.active = false);
+                        canvas.addEventListener('mouseleave', () => mouse.active = false);
+
                         function hashCode(str) {
                             let hash = 0;
                             for (let i = 0; i < str.length; i++) {
@@ -298,99 +347,69 @@ fun HTML.waitingPage(name: String, waitingUsers: List<UserData>, email: String) 
                             return Math.abs(hash);
                         }
 
-                        const companyColors = {
-                            'Star Finanz': '#ff0000',      // Red
-                            'Finanz Informatik': '#ffff00', // Yellow
-                            'inasys': '#00ff00',           // Green
-                            'FI-TS': '#8000ff',            // Purple
-                            'FI-SP': '#0080ff',            // Blue
-                            'FINMAS': '#ff8000'            // Orange
-                        };
-
                         const particles = waitingUsers.map(u => {
                             const seed = hashCode(u.name + u.company);
                             return {
                                 ...u,
-                                x: (seed % 1000) / 1000 * width,
-                                y: ((seed / 1000) % 1000) / 1000 * height,
-                                vx: 0,
-                                vy: 0,
-                                radius: 3,
-                                color: companyColors[u.company] || '#ffffff'
+                                x: Math.random() * width,
+                                y: Math.random() * height,
+                                vx: (Math.random() - 0.5) * 0.5,
+                                vy: (Math.random() - 0.5) * 0.5,
+                                radius: 2
                             };
                         });
 
-                        function updatePositions() {
-                            // Simple Force-Directed Layout logic
-                            for (let i = 0; i < 50; i++) { // Run few iterations to stabilize
-                                particles.forEach((p1, idx1) => {
-                                    // Repulsion from other particles
-                                    particles.forEach((p2, idx2) => {
-                                        if (idx1 === idx2) return;
-                                        const dx = p1.x - p2.x;
-                                        const dy = p1.y - p2.y;
-                                        const dist = Math.hypot(dx, dy) || 1;
-                                        if (dist < 80) {
-                                            const force = (80 - dist) / 80 * 2;
-                                            p1.x += (dx / dist) * force;
-                                            p1.y += (dy / dist) * force;
-                                        }
-                                    });
-                                    // Repulsion from walls
-                                    const margin = 20;
-                                    if (p1.x < margin) p1.x += 2;
-                                    if (p1.x > width - margin) p1.x -= 2;
-                                    if (p1.y < margin) p1.y += 2;
-                                    if (p1.y > height - margin) p1.y -= 2;
-                                });
-                            }
-                        }
-                        updatePositions();
-
-                        function draw() {
-                            ctx.clearRect(0, 0, width, height);
+                        function animate() {
+                            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                            ctx.fillRect(0, 0, width, height);
                             
-                            // Draw static connections
-                            for (let i = 0; i < particles.length; i++) {
-                                for (let j = i + 1; j < particles.length; j++) {
-                                    const p1 = particles[i];
-                                    const p2 = particles[j];
-                                    
-                                    const isSameCompany = p1.company === p2.company && p1.company !== '';
-                                    const hasInterestMatch = (p1.hobby === p2.hobby && p1.hobby !== '') ||
-                                        (p1.tech === p2.tech && p1.tech !== '') ||
-                                        (p1.travel === p2.travel && p1.travel !== '') ||
-                                        (p1.work === p2.work && p1.work !== '') ||
-                                        (p1.coffee === p2.coffee && p1.coffee !== '') ||
-                                        (p1.after === p2.after && p1.after !== '') ||
-                                        (p1.fuel === p2.fuel && p1.fuel !== '');
+                            particles.forEach((p, idx) => {
+                                // Brownian Motion
+                                p.x += p.vx;
+                                p.y += p.vy;
 
-                                    if (isSameCompany || hasInterestMatch) {
-                                        ctx.beginPath();
-                                        ctx.moveTo(p1.x, p1.y);
-                                        ctx.lineTo(p2.x, p2.y);
-                                        // Use company color for company lines, otherwise subtle white
-                                        ctx.strokeStyle = isSameCompany ? p1.color : 'rgba(255, 255, 255, 0.1)';
-                                        ctx.globalAlpha = isSameCompany ? 0.6 : 1.0;
-                                        ctx.lineWidth = isSameCompany ? 1.5 : 0.5;
-                                        ctx.stroke();
-                                        ctx.globalAlpha = 1.0;
+                                // Bounce
+                                if (p.x < 0 || p.x > width) p.vx *= -1;
+                                if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                                // Mouse Interaction
+                                if (mouse.active) {
+                                    const dx = p.x - mouse.x;
+                                    const dy = p.y - mouse.y;
+                                    const dist = Math.hypot(dx, dy);
+                                    if (dist < 60) {
+                                        p.x += dx / dist * 2;
+                                        p.y += dy / dist * 2;
                                     }
                                 }
-                            }
 
-                            // Draw stable particles
-                            particles.forEach(p => {
+                                // Connections
+                                particles.slice(idx + 1).forEach(p2 => {
+                                    const dx = p.x - p2.x;
+                                    const dy = p.y - p2.y;
+                                    const dist = Math.hypot(dx, dy);
+                                    
+                                    if (dist < 50) {
+                                        const hasMatch = (p.hobby === p2.hobby) || (p.tech === p2.tech);
+                                        ctx.beginPath();
+                                        ctx.moveTo(p.x, p.y);
+                                        ctx.lineTo(p2.x, p2.y);
+                                        ctx.strokeStyle = hasMatch ? 'rgba(255, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.05)';
+                                        ctx.lineWidth = hasMatch ? 1 : 0.5;
+                                        ctx.stroke();
+                                    }
+                                });
+
+                                // Draw Node
                                 ctx.beginPath();
                                 ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                                ctx.fillStyle = p.color;
+                                ctx.fillStyle = '#fff';
                                 ctx.fill();
                             });
+                            
+                            requestAnimationFrame(animate);
                         }
-                        
-                        // Draw once, or only on resize
-                        draw();
-                        // No requestAnimationFrame needed since it's now static
+                        animate();
                     """)
                 }
             }
@@ -398,14 +417,13 @@ fun HTML.waitingPage(name: String, waitingUsers: List<UserData>, email: String) 
             div {
                 style = "margin-top: 20px;"
                 span("spinner")
-                span { +" Verbindung wird hergestellt..." }
+                span { +" Verbindung zum Server aktiv..." }
             }
-            a(href = "/myteam?email=$email") { button { +"Refreshen" } }
         }
     }
 }
 
-fun HTML.teamPage(teamName: String, members: List<UserData>) {
+fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String) {
     // Identify shared interests (occurring more than once in the team)
     val sharedHobby = members.groupingBy { it.hobby }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
     val sharedTech = members.groupingBy { it.techInterest }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
@@ -419,6 +437,15 @@ fun HTML.teamPage(teamName: String, members: List<UserData>) {
         div("container") {
             h1 { +"Dein Team" }
             h2("accent-text") { +teamName }
+
+            div("card") {
+                style = "border: 2px solid var(--accent); background: rgba(255, 0, 0, 0.05); margin-bottom: 25px;"
+                h3("accent-text") { +"MISSION // ICEBREAKER" }
+                p { 
+                    style = "font-size: 1.2rem; margin: 10px 0;"
+                    +mission 
+                }
+            }
             
             div("team-list") {
                 members.forEach { member ->
@@ -485,7 +512,93 @@ fun HTML.teamPage(teamName: String, members: List<UserData>) {
             }
             
             p { +"Vernetze dich jetzt und finde deine Team-Kollegen!" }
-            a(href = "/profile?email=${members.find { it.email != null }?.email ?: ""}") { // This is a bit hacky, normally you'd have the current user's email
+            
+            div("card") {
+                style = "border: 1px solid #333; margin-top: 20px; text-align: center;"
+                h3 { +"DIGITAL_ID_CARD" }
+                canvas {
+                    id = "idCardCanvas"
+                    width = "400"; height = "250"
+                    style = "max-width: 100%; height: auto; border: 1px solid #fff; margin-bottom: 15px;"
+                }
+                button(type = ButtonType.button) {
+                    onClick = "downloadIDCard()"
+                    +"ID-CARD HERUNTERLADEN (.PNG)"
+                }
+            }
+
+            script {
+                unsafe {
+                    raw("""
+                        function generateIDCard() {
+                            const canvas = document.getElementById('idCardCanvas');
+                            const ctx = canvas.getContext('2d');
+                            const user = ${members.find { it.email != null }?.let { "{ name: '${it.name}', company: '${it.company}', team: '$teamName', pic: '${it.profilePicture ?: ""}' }" } ?: "null"};
+                            
+                            if(!user) return;
+
+                            // Background
+                            ctx.fillStyle = '#000';
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+                            
+                            // Border
+                            ctx.strokeStyle = '#fff';
+                            ctx.setLineDash([5, 5]);
+                            ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+                            ctx.setLineDash([]);
+
+                            // Profile Pic (if exists)
+                            if(user.pic) {
+                                const img = new Image();
+                                img.onload = () => {
+                                    ctx.drawImage(img, 20, 40, 80, 80);
+                                    drawText();
+                                };
+                                img.src = user.pic;
+                            } else {
+                                ctx.strokeStyle = '#333';
+                                ctx.strokeRect(20, 40, 80, 80);
+                                ctx.fillStyle = '#333';
+                                ctx.font = '40px VT323';
+                                ctx.fillText('?', 50, 95);
+                                drawText();
+                            }
+
+                            function drawText() {
+                                ctx.fillStyle = '#fff';
+                                ctx.font = '24px VT323';
+                                ctx.fillText(user.name.toUpperCase(), 120, 60);
+                                
+                                ctx.font = '14px Inter';
+                                ctx.fillStyle = '#a0a0a0';
+                                ctx.fillText(user.company.toUpperCase(), 120, 85);
+                                
+                                ctx.fillStyle = '#ff0000';
+                                ctx.font = '20px VT323';
+                                ctx.fillText(user.team.toUpperCase(), 120, 120);
+
+                                // Bottom "Nothing" Style elements
+                                ctx.fillStyle = '#333';
+                                ctx.font = '10px VT323';
+                                ctx.fillText('MATCHMAKER // CONVENTION_EDITION_2026', 20, 230);
+                                ctx.fillText('UID: ' + btoa(user.name).substring(0,8).toUpperCase(), 320, 230);
+                            }
+                        }
+
+                        function downloadIDCard() {
+                            const canvas = document.getElementById('idCardCanvas');
+                            const link = document.createElement('a');
+                            link.download = 'matchmaker-id-card.png';
+                            link.href = canvas.toDataURL();
+                            link.click();
+                        }
+
+                        document.addEventListener('DOMContentLoaded', generateIDCard);
+                    """)
+                }
+            }
+
+            a(href = "/profile?email=${members.find { it.email != null }?.email ?: ""}") {
                  button { +"Mein Profil bearbeiten" }
             }
         }
