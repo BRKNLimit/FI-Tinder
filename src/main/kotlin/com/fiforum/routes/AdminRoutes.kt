@@ -17,7 +17,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Route.adminRoutes() {
     get("/admin") {
-        val (userCount, teamCount, isLaunched, allUsers, teams) = transaction {
+        val data = transaction {
             val userCount = Users.selectAll().count()
             val teamCount = TeamsTable.selectAll().count()
             val isLaunched = MatchingService.isLaunched
@@ -27,7 +27,8 @@ fun Route.adminRoutes() {
                     it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
                     it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
                     it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
-                    it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode]
+                    it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode],
+                    it[Users.joinedAt].toString()
                 )
             }
 
@@ -39,7 +40,8 @@ fun Route.adminRoutes() {
                             it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
                             it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
                             it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
-                            it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode]
+                            it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode],
+                            it[Users.joinedAt].toString()
                         )
                     }
                     teamRow[TeamsTable.name] to members
@@ -47,14 +49,13 @@ fun Route.adminRoutes() {
             } else {
                 emptyList()
             }
-
-            @Suppress("UNCHECKED_CAST")
-            val t: List<Pair<String, List<UserData>>> = teamsWithMembers as List<Pair<String, List<UserData>>>
             
-            Quintuple(userCount, teamCount, isLaunched, allUsers, t)
+            AdminData(userCount, teamCount, isLaunched, allUsers, teamsWithMembers)
         }
 
-        call.respondHtml { adminDashboard(userCount as Long, teamCount as Long, isLaunched as Boolean, teams as List<Pair<String, List<UserData>>>, allUsers as List<UserData>) }
+        call.respondHtml { 
+            adminDashboard(data.userCount, data.teamCount, data.isLaunched, data.teams, data.allUsers) 
+        }
     }
 
     post("/admin/generate") {
@@ -74,4 +75,10 @@ fun Route.adminRoutes() {
     }
 }
 
-data class Quintuple<A, B, C, D, E>(val first: A, val second: B, val third: C, val fourth: D, val fifth: E)
+data class AdminData(
+    val userCount: Long,
+    val teamCount: Long,
+    val isLaunched: Boolean,
+    val allUsers: List<UserData>,
+    val teams: List<Pair<String, List<UserData>>>
+)

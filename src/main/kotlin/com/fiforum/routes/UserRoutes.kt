@@ -18,20 +18,21 @@ fun Route.userRoutes() {
     get("/myteam") {
         val emailAddr = call.parameters["email"] ?: return@get call.respondRedirect("/")
         
-        val userRow = transaction {
-            Users.select { Users.email eq emailAddr }.singleOrNull()
-        }
+        val result = transaction {
+            val userRow = Users.select { Users.email eq emailAddr }.singleOrNull()
 
-        if (userRow == null) {
-            call.respondRedirect("/")
-        } else {
-            val teamId = userRow[Users.teamId]
-            if (teamId == null || !MatchingService.isLaunched) {
-                call.respondHtml { waitingPage(userRow[Users.name], emptyList(), emailAddr) }
+            if (userRow == null) {
+                null
             } else {
-                val (teamName, teamMission, members) = transaction {
+                val teamId = userRow[Users.teamId]
+                if (teamId == null || !MatchingService.isLaunched) {
+                    // Waiting
+                    UserTeamResult.Waiting(userRow[Users.name], emailAddr)
+                } else {
+                    // In a team
                     val teamRow = TeamsTable.select { TeamsTable.id eq teamId }.single()
                     val index = teamRow[TeamsTable.currentMissionIndex]
+                    val color = teamRow[TeamsTable.teamColor]
                     val missionText = when(index) {
                         1 -> teamRow[TeamsTable.mission1]
                         2 -> teamRow[TeamsTable.mission2]
@@ -39,18 +40,24 @@ fun Route.userRoutes() {
                         else -> teamRow[TeamsTable.mission3]
                     } ?: "Find your team!"
                     
-                    val m = Users.select { Users.teamId eq teamId }.map {
+                    val members = Users.select { Users.teamId eq teamId }.map {
                         UserData(
                             it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
                             it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
                             it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
-                            it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode]
+                            it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode],
+                            it[Users.joinedAt].toString()
                         )
                     }
-                    Triple(teamRow[TeamsTable.name], missionText, m)
+                    UserTeamResult.InTeam(teamRow[TeamsTable.name], members, missionText, emailAddr, color)
                 }
-                call.respondHtml { teamPage(teamName, members, teamMission, emailAddr) }
             }
+        }
+
+        when (result) {
+            is UserTeamResult.Waiting -> call.respondHtml { waitingPage(result.name, emptyList(), result.email) }
+            is UserTeamResult.InTeam -> call.respondHtml { teamPage(result.teamName, result.members, result.mission, result.email, result.color) }
+            else -> call.respondRedirect("/")
         }
     }
 
@@ -61,10 +68,16 @@ fun Route.userRoutes() {
                     it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
                     it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
                     it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
-                    it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode]
+                    it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode],
+                    it[Users.joinedAt].toString()
                 )
             }
         }
         call.respond(users)
     }
+}
+
+sealed class UserTeamResult {
+    data class Waiting(val name: String, val email: String) : UserTeamResult()
+    data class InTeam(val teamName: String, val members: List<UserData>, val mission: String, val email: String, val color: String) : UserTeamResult()
 }

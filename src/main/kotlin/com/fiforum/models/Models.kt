@@ -2,6 +2,8 @@ package com.fiforum.models
 
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.javatime.datetime
+import java.time.LocalDateTime
 
 object Users : Table("users") {
     val email = varchar("email", 100)
@@ -29,6 +31,9 @@ object Users : Table("users") {
     val address = varchar("address", 255).nullable()
     val zipCode = varchar("zipCode", 20).nullable()
     
+    // Position/Timestamp field
+    val joinedAt = datetime("joinedAt").default(LocalDateTime.now())
+    
     override val primaryKey = PrimaryKey(email)
 }
 
@@ -39,6 +44,7 @@ object TeamsTable : Table("teams") {
     val mission2 = text("mission2").nullable()
     val mission3 = text("mission3").nullable()
     val currentMissionIndex = integer("currentMissionIndex").default(1)
+    val teamColor = varchar("teamColor", 20).default("#ff0000") // Red fallback
     override val primaryKey = PrimaryKey(id)
 }
 
@@ -61,5 +67,6 @@ data class UserData(
     val phonePrivate: String? = null,
     val phoneWork: String? = null,
     val address: String? = null,
-    val zipCode: String? = null
+    val zipCode: String? = null,
+    val joinedAt: String? = null
 )

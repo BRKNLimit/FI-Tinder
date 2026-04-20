@@ -330,12 +330,15 @@ fun HTML.waitingPage(name: String, initialWaitingUsers: List<UserData>, email: S
 
                         async function refreshUsers() {
                             try {
+                                console.log("Fetching waiting users...");
                                 const response = await fetch('/api/waiting-users');
                                 const users = await response.json();
+                                console.log("Users received:", users.length);
                                 document.getElementById('nodeCount').innerText = users.length;
                                 
                                 users.forEach(u => {
                                     if (!particles.find(p => p.email === u.email)) {
+                                        console.log("Adding new particle for:", u.name);
                                         const seed = hashCode(u.name + u.email);
                                         const offset = companyOffsets[u.company] || { x: 0, y: 0 };
                                         
@@ -473,7 +476,7 @@ fun HTML.waitingPage(name: String, initialWaitingUsers: List<UserData>, email: S
     }
 }
 
-fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, currentUserEmail: String) {
+fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, currentUserEmail: String, teamColor: String) {
     val sortedMembers = members.sortedByDescending { it.email.lowercase() == currentUserEmail.lowercase() }
     val currentUser = sortedMembers.firstOrNull { it.email.lowercase() == currentUserEmail.lowercase() }
 
@@ -488,7 +491,15 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
     layout(
         title = "Your Team // Matchmaker",
         headContent = {
-            script { src = "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" }
+            style {
+                unsafe {
+                    raw("""
+                        :root {
+                            --accent: $teamColor !important;
+                        }
+                    """)
+                }
+            }
             script {
                 unsafe {
                     raw("""
@@ -715,7 +726,7 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                                 ctx.fillStyle = '#a0a0a0';
                                 ctx.fillText(user.company.toUpperCase(), 120, 85);
                                 
-                                ctx.fillStyle = '#ff0000';
+                                ctx.fillStyle = '$teamColor';
                                 ctx.font = '22px VT323';
                                 ctx.fillText(user.team.toUpperCase(), 120, 120);
 

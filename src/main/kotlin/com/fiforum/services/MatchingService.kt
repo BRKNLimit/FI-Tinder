@@ -14,6 +14,19 @@ object MatchingService {
     var isLaunched = false
     private var schedulerJob: Job? = null
 
+    private val teamColors = listOf(
+        "#ff0000", // Red
+        "#0066ff", // Blue
+        "#00ff00", // Green
+        "#ffff00", // Yellow
+        "#9900ff", // Purple
+        "#ff9900", // Orange
+        "#ff0099", // Pink
+        "#00ffff", // Cyan
+        "#66ff00", // Lime
+        "#00ff99"  // Teal
+    )
+
     private val sportGroup = setOf("Fußball", "Wandern", "Yoga", "Gym / Fitness", "Teamsport", "ab zum Sport", "Sportergebnisse")
     private val gamingGroup = setOf("Gaming", "Zocken", "Gaming News")
     private val foodGroup = setOf("Kochen", "Fancy kochen", "Snacks")
@@ -79,7 +92,8 @@ object MatchingService {
                     it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
                     it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
                     it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
-                    it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode]
+                    it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode],
+                    it[Users.joinedAt].toString()
                 )
             }
 
@@ -115,7 +129,7 @@ object MatchingService {
             }
 
             // Save results
-            bestGlobalState.forEach { members ->
+            bestGlobalState.forEachIndexed { teamIndex, members ->
                 val allInterests = members.flatMap { 
                     listOf(it.hobby, it.techInterest, it.travel, it.workstyle, it.coffeeTalk, it.afterWork, it.fuel) 
                 }.filter { it.isNotBlank() && !it.startsWith("...") }
@@ -167,6 +181,7 @@ object MatchingService {
                     it[mission2] = missions.getOrNull(1)
                     it[mission3] = missions.getOrNull(2)
                     it[currentMissionIndex] = 1
+                    it[teamColor] = teamColors[teamIndex % teamColors.size]
                 }[TeamsTable.id]
 
                 members.forEach { m -> Users.update({ Users.email eq m.email }) { it[teamId] = tId } }
@@ -287,7 +302,8 @@ object MatchingService {
                         it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
                         it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
                         it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
-                        it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode]
+                        it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode],
+                        it[Users.joinedAt].toString()
                     )
                 }
                 tId to members
