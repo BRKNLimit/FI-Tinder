@@ -18,48 +18,43 @@ fun Route.userRoutes() {
     get("/myteam") {
         val emailAddr = call.parameters["email"] ?: return@get call.respondRedirect("/")
         
-        val result = transaction {
-            val userRow = Users.select { Users.email eq emailAddr }.singleOrNull()
-            if (userRow == null) return@transaction null
-
-            val teamId = userRow[Users.teamId]
-            if (teamId == null || !MatchingService.isLaunched) {
-                val waitingUsers = Users.select { Users.teamId.isNull() }.map {
-                    UserData(
-                        it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
-                        it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
-                        it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture]
-                    )
-                }
-                Triple(userRow[Users.name], waitingUsers, null)
-            } else {
-                val teamRow = TeamsTable.select { TeamsTable.id eq teamId }.single()
-                val teamName = teamRow[TeamsTable.name]
-                val teamMission = teamRow[TeamsTable.mission] ?: "Find your team and start the conversation!"
-                
-                val members = Users.select { Users.teamId eq teamId }.map {
-                    UserData(
-                        it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
-                        it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
-                        it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture]
-                    )
-                }
-                Quad(teamName, teamMission, emptyList<UserData>(), members)
-            }
+        val userRow = transaction {
+            Users.select { Users.email eq emailAddr }.singleOrNull()
         }
 
-        if (result == null) {
+        if (userRow == null) {
             call.respondRedirect("/")
         } else {
-            if (result is Triple<*, *, *>) {
-                val (name, waitingUsers, _) = result as Triple<String, List<UserData>, *>
-                call.respondHtml { waitingPage(name, waitingUsers, emailAddr) }
+            val teamId = userRow[Users.teamId]
+            if (teamId == null || !MatchingService.isLaunched) {
+                call.respondHtml { waitingPage(userRow[Users.name], emptyList(), emailAddr) }
             } else {
-                val (teamName, mission, _, members) = result as Quad<String, String, *, List<UserData>>
-                call.respondHtml { teamPage(teamName, members, mission) }
+                val (teamName, teamMission, members) = transaction {
+                    val teamRow = TeamsTable.select { TeamsTable.id eq teamId }.single()
+                    val m = Users.select { Users.teamId eq teamId }.map {
+                        UserData(
+                            it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
+                            it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
+                            it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture]
+                        )
+                    }
+                    Triple(teamRow[TeamsTable.name], teamRow[TeamsTable.mission] ?: "Find your team!", m)
+                }
+                call.respondHtml { teamPage(teamName, members, teamMission) }
             }
         }
     }
-}
 
-data class Quad<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
+    get("/api/waiting-users") {
+        val users = transaction {
+            Users.select { Users.teamId.isNull() }.map {
+                UserData(
+                    it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
+                    it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
+                    it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture]
+                )
+            }
+        }
+        call.respond(users)
+    }
+}
