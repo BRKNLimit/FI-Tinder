@@ -68,11 +68,14 @@ fun HTML.registrationPage() {
                     }
                 }
                 div("input-group") {
-                    label { +"Präferenz: Workstyle" }
+                    label { +"Ich arbeite am liebsten..." }
                     select { 
                         name = "workstyle"; required = true
                         option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
-                        option { +"Remote" }; option { +"Office" }; option { +"Hybrid" } 
+                        option { +"... Remote" }
+                        option { +"... im Office" }
+                        option { +"... möglichst früh" }
+                        option { +"... möglichst spät" }
                     }
                 }
                 div("input-group") {
