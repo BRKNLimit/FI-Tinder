@@ -22,6 +22,12 @@ object Users : Table("users") {
     val linkedinUrl = varchar("linkedinUrl", 255).nullable()
     val xingUrl = varchar("xingUrl", 255).nullable()
     val profilePicture = text("profilePicture").nullable() // Base64 storage
+
+    // New personal data fields
+    val phonePrivate = varchar("phonePrivate", 50).nullable()
+    val phoneWork = varchar("phoneWork", 50).nullable()
+    val address = varchar("address", 255).nullable()
+    val zipCode = varchar("zipCode", 20).nullable()
     
     override val primaryKey = PrimaryKey(email)
 }
@@ -51,5 +57,9 @@ data class UserData(
     val fuel: String,
     val linkedinUrl: String? = null,
     val xingUrl: String? = null,
-    val profilePicture: String? = null
+    val profilePicture: String? = null,
+    val phonePrivate: String? = null,
+    val phoneWork: String? = null,
+    val address: String? = null,
+    val zipCode: String? = null
 )

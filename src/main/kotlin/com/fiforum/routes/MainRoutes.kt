@@ -70,7 +70,8 @@ fun Route.mainRoutes() {
                 UserData(
                     it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
                     it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
-                    it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture]
+                    it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
+                    it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode]
                 )
             }
         }
@@ -89,6 +90,10 @@ fun Route.mainRoutes() {
                 if (params["profilePicture"]?.isNotBlank() == true) {
                     it[profilePicture] = params["profilePicture"]
                 }
+                it[phonePrivate] = params["phonePrivate"]
+                it[phoneWork] = params["phoneWork"]
+                it[address] = params["address"]
+                it[zipCode] = params["zipCode"]
             }
         }
         call.respondRedirect("/myteam?email=$emailAddr")
@@ -113,6 +118,10 @@ fun Route.mainRoutes() {
                 it[linkedinUrl] = params["linkedinUrl"]
                 it[xingUrl] = params["xingUrl"]
                 it[profilePicture] = params["profilePicture"]
+                it[phonePrivate] = params["phonePrivate"]
+                it[phoneWork] = params["phoneWork"]
+                it[address] = params["address"]
+                it[zipCode] = params["zipCode"]
             }
             
             if (MatchingService.isLaunched) {
@@ -130,7 +139,11 @@ fun Route.mainRoutes() {
                     params["fuel"] ?: "",
                     params["linkedinUrl"],
                     params["xingUrl"],
-                    params["profilePicture"]
+                    params["profilePicture"],
+                    params["phonePrivate"],
+                    params["phoneWork"],
+                    params["address"],
+                    params["zipCode"]
                 )
                 MatchingService.assignLatecomer(latecomer)
             }

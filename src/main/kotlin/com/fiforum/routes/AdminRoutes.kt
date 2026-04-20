@@ -8,6 +8,7 @@ import com.fiforum.services.MatchingService
 import com.fiforum.views.adminDashboard
 import io.ktor.server.application.*
 import io.ktor.server.html.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.selectAll
@@ -16,15 +17,17 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Route.adminRoutes() {
     get("/admin") {
-        val data = transaction {
+        val (userCount, teamCount, isLaunched, allUsers, teams) = transaction {
             val userCount = Users.selectAll().count()
             val teamCount = TeamsTable.selectAll().count()
+            val isLaunched = MatchingService.isLaunched
             
             val allUsers = Users.selectAll().map {
                 UserData(
                     it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
                     it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
-                    it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture]
+                    it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
+                    it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode]
                 )
             }
 
@@ -35,7 +38,8 @@ fun Route.adminRoutes() {
                         UserData(
                             it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
                             it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
-                            it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture]
+                            it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
+                            it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode]
                         )
                     }
                     teamRow[TeamsTable.name] to members
@@ -43,19 +47,14 @@ fun Route.adminRoutes() {
             } else {
                 emptyList()
             }
+
+            @Suppress("UNCHECKED_CAST")
+            val t: List<Pair<String, List<UserData>>> = teamsWithMembers as List<Pair<String, List<UserData>>>
             
-            val result = object {
-                val uCount = userCount
-                val tCount = teamCount
-                val users = allUsers
-                val teams = teamsWithMembers
-            }
-            result
+            Quintuple(userCount, teamCount, isLaunched, allUsers, t)
         }
-        
-        call.respondHtml { 
-            adminDashboard(data.uCount, data.tCount, MatchingService.isLaunched, data.teams, data.users) 
-        }
+
+        call.respondHtml { adminDashboard(userCount as Long, teamCount as Long, isLaunched as Boolean, teams as List<Pair<String, List<UserData>>>, allUsers as List<UserData>) }
     }
 
     post("/admin/generate") {
@@ -74,3 +73,5 @@ fun Route.adminRoutes() {
         call.respondRedirect("/admin")
     }
 }
+
+data class Quintuple<A, B, C, D, E>(val first: A, val second: B, val third: C, val fourth: D, val fifth: E)

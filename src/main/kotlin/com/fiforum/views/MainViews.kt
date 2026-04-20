@@ -259,6 +259,24 @@ fun HTML.profilePage(user: UserData) {
                     }
                 }
 
+                h3 { +"Persönliche Daten (VCard)" }
+                div("input-group") {
+                    label { +"Telefon (Privat)" }
+                    input(type = InputType.text) { name = "phonePrivate"; value = user.phonePrivate ?: "" }
+                }
+                div("input-group") {
+                    label { +"Telefon (Arbeit)" }
+                    input(type = InputType.text) { name = "phoneWork"; value = user.phoneWork ?: "" }
+                }
+                div("input-group") {
+                    label { +"Adresse" }
+                    input(type = InputType.text) { name = "address"; value = user.address ?: "" }
+                }
+                div("input-group") {
+                    label { +"PLZ" }
+                    input(type = InputType.text) { name = "zipCode"; value = user.zipCode ?: "" }
+                }
+
                 button(type = ButtonType.submit) { +"Speichern & zurück zum Team" }
             }
             
@@ -456,7 +474,6 @@ fun HTML.waitingPage(name: String, initialWaitingUsers: List<UserData>, email: S
 }
 
 fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, currentUserEmail: String) {
-    // Sort members so current user is always at the top
     val sortedMembers = members.sortedByDescending { it.email.lowercase() == currentUserEmail.lowercase() }
     val currentUser = sortedMembers.firstOrNull { it.email.lowercase() == currentUserEmail.lowercase() }
 
@@ -471,6 +488,7 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
     layout(
         title = "Your Team // Matchmaker",
         headContent = {
+            script { src = "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" }
             script {
                 unsafe {
                     raw("""
@@ -500,6 +518,26 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                                 }
                                 status.innerText = progress + '%';
                             }, 50);
+                        }
+
+                        function downloadVCard(u) {
+                            const vcard = "BEGIN:VCARD\n" +
+                                "VERSION:3.0\n" +
+                                "FN:" + u.name + "\n" +
+                                "ORG:" + u.company + "\n" +
+                                "EMAIL:" + u.email + "\n" +
+                                (u.phoneWork ? "TEL;TYPE=WORK,VOICE:" + u.phoneWork + "\n" : "") +
+                                (u.phonePrivate ? "TEL;TYPE=HOME,VOICE:" + u.phonePrivate + "\n" : "") +
+                                (u.address ? "ADR;TYPE=WORK:;;" + u.address + ";;;" + (u.zipCode || "") + ";\n" : "") +
+                                (u.linkedin ? "URL:" + u.linkedin + "\n" : "") +
+                                "END:VCARD";
+                            
+                            const blob = new Blob([vcard], { type: 'text/vcard' });
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = u.name.replace(' ', '_') + '.vcf';
+                            a.click();
                         }
 
                         document.addEventListener('DOMContentLoaded', setupTeamWebSocket);
@@ -564,6 +602,12 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                                             span("badge") { style = "color: #026466; border-color: #026466;"; +"Xing" }
                                         }
                                     }
+                                    button(type = ButtonType.button) {
+                                        style = "width: auto; padding: 2px 10px; font-size: 0.7rem; margin-top: 5px;"
+                                        val uJson = """{ name: '${member.name}', company: '${member.company}', email: '${member.email}', phoneWork: '${member.phoneWork ?: ""}', phonePrivate: '${member.phonePrivate ?: ""}', address: '${member.address ?: ""}', zipCode: '${member.zipCode ?: ""}', linkedin: '${member.linkedinUrl ?: ""}' }"""
+                                        onClick = "downloadVCard($uJson)"
+                                        +"KONTAKT SPEICHERN (.VCF)"
+                                    }
                                 }
                             }
                         }
@@ -617,7 +661,7 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                         function generateIDCard() {
                             const canvas = document.getElementById('idCardCanvas');
                             const ctx = canvas.getContext('2d');
-                            const user = ${currentUser?.let { "{ name: '${it.name}', company: '${it.company}', team: '$teamName', pic: '${it.profilePicture ?: ""}' }" } ?: "null"};
+                            const user = ${currentUser?.let { "{ name: '${it.name}', company: '${it.company}', team: '$teamName', pic: '${it.profilePicture ?: ""}', email: '${it.email}', phoneWork: '${it.phoneWork ?: ""}', phonePrivate: '${it.phonePrivate ?: ""}', address: '${it.address ?: ""}', zipCode: '${it.zipCode ?: ""}', linkedin: '${it.linkedinUrl ?: ""}' }" } ?: "null"};
                             
                             if(!user) return;
 
@@ -633,7 +677,7 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                                 const img = new Image();
                                 img.onload = () => {
                                     ctx.drawImage(img, 20, 40, 80, 80);
-                                    drawText();
+                                    drawDetails();
                                 };
                                 img.src = user.pic;
                             } else {
@@ -642,10 +686,10 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                                 ctx.fillStyle = '#333';
                                 ctx.font = '40px VT323';
                                 ctx.fillText('?', 50, 95);
-                                drawText();
+                                drawDetails();
                             }
 
-                            function drawText() {
+                            function drawDetails() {
                                 ctx.fillStyle = '#fff';
                                 ctx.font = '24px VT323';
                                 ctx.fillText(user.name.toUpperCase(), 120, 60);
@@ -657,6 +701,22 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                                 ctx.fillStyle = '#ff0000';
                                 ctx.font = '20px VT323';
                                 ctx.fillText(user.team.toUpperCase(), 120, 120);
+
+                                // Generate QR Code for VCard
+                                const vcardData = "BEGIN:VCARD\nVERSION:3.0\nFN:" + user.name + "\nORG:" + user.company + "\nTEL:" + (user.phoneWork || user.phonePrivate || "") + "\nEMAIL:" + user.email + "\nEND:VCARD";
+                                const qr = qrcode(0, 'M');
+                                qr.addData(vcardData);
+                                qr.make();
+                                
+                                // Draw QR Code on Canvas
+                                const qrSize = 80;
+                                const qrImg = new Image();
+                                qrImg.onload = () => {
+                                    ctx.fillStyle = '#fff';
+                                    ctx.fillRect(300, 40, qrSize + 10, qrSize + 10); // White background for QR
+                                    ctx.drawImage(qrImg, 305, 45, qrSize, qrSize);
+                                };
+                                qrImg.src = qr.createDataURL(4);
 
                                 ctx.fillStyle = '#333';
                                 ctx.font = '10px VT323';

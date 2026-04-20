@@ -43,7 +43,8 @@ fun Route.userRoutes() {
                         UserData(
                             it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
                             it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
-                            it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture]
+                            it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
+                            it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode]
                         )
                     }
                     Triple(teamRow[TeamsTable.name], missionText, m)
@@ -59,7 +60,8 @@ fun Route.userRoutes() {
                 UserData(
                     it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
                     it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
-                    it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture]
+                    it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
+                    it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode]
                 )
             }
         }
