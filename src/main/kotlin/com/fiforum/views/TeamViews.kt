@@ -174,7 +174,19 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                             'GALACTIC FINANCE': 'Auf dem Mars mit einem Girokonto? Du bist bereit für die interplanetare Wirtschaft.',
                             'THE TRUE NEUTRAL': 'Exakt 5 mal A und 5 mal B. Absolute Balance in allen Dingen.',
                             'SYNESTHESIA': 'Du kannst Wochentage schmecken. Ein wahrer Dadaist!',
-                            'HIVE MIND DADA': 'Dein gesamtes Team ist sich einig, welcher Wochentage besser schmeckt. Gruselig!'
+                            'HIVE MIND DADA': 'Dein gesamtes Team ist sich einig, welcher Wochentage besser schmeckt.',
+                            'MARS MAKLER': 'Auf dem Mars mit einer Kreditkarte? Expansiver Lifestyle!',
+                            'TIMMY RESCUE': 'Du hast Timmy unter Wasser gerettet. Held der Meere!',
+                            'BONSAI JEDI': 'Winzig klein, aber die Macht ist stark in dir.',
+                            'TUESDAY DIVA': 'Dienstag und Rot? Eine explosive Mischung.',
+                            'OAK INVESTOR': 'Bodenständig wie eine Eiche und ein Girokonto für die Sicherheit.',
+                            'URANUS HERMIT': 'Alleine unter Wasser auf dem Uranus. Der ultimative Rückzugsort.',
+                            'HARAMBE LEGACY': 'Gigantisches Gedenken an einen großen Primaten.',
+                            'THURSDAY GOURMET': 'Donnerstag unter Palmen genießen. Ein Feinschmecker des Schicksals.',
+                            'SYNERGY MASTER': 'Du hast über 4 gemeinsame Antworten mit deinem Team.',
+                            'UNICORN': 'Deine Kombination an Antworten ist absolut einzigartig.',
+                            'DIVERSITY PRO': 'Dein Team besteht aus Mitgliedern von lauter unterschiedlichen Firmen.',
+                            'FULL HOUSE': 'Dein Team hat die maximale Größe von 5 Personen erreicht.'
                         };
 
                         function toggleFlip() {

@@ -49,52 +49,32 @@ fun Route.userRoutes() {
                     
                     val members = Users.selectAll().where { Users.teamId eq teamId }.map { it.toUserData() }
 
-                    // --- Joining Badge Calculation (KEEP) ---
+                    // --- Badge Calculation via Service ---
                     val totalUsers = Users.selectAll().count()
                     val allUsersSorted = Users.selectAll().orderBy(Users.joinedAt to SortOrder.ASC).map { it[Users.email] }
                     
-                    members.forEach { m ->
-                        if (m.isLatecomer) {
-                            m.joinBadge = "latecomer"
-                        } else {
-                            val userRank = allUsersSorted.indexOf(m.email) + 1
-                            if (totalUsers > 0) {
-                                m.joinBadge = when {
-                                    userRank <= totalUsers * 0.1 -> "alpha_10"
-                                    userRank <= totalUsers * 0.5 -> "beta_50"
-                                    userRank > totalUsers * 0.9 -> "gamma_10"
-                                    else -> "active_member"
+                    val currentUserData = members.find { it.email == emailAddr }
+                    if (currentUserData != null) {
+                        // Apply join badges to all members for display
+                        members.forEach { m ->
+                            if (m.isLatecomer) m.joinBadge = "latecomer"
+                            else {
+                                val rank = allUsersSorted.indexOf(m.email) + 1
+                                if (totalUsers > 0) {
+                                    m.joinBadge = when {
+                                        rank <= totalUsers * 0.1 -> "alpha_10"
+                                        rank <= totalUsers * 0.5 -> "beta_50"
+                                        rank > totalUsers * 0.9 -> "gamma_10"
+                                        else -> "active_member"
+                                    }
                                 }
                             }
                         }
                     }
 
-                    val badges = mutableListOf<String>()
-                    val currentUser = members.find { it.email == emailAddr }
-                    currentUser?.joinBadge?.let { badges.add(it) }
-
-                    // --- Dadaist Badges (NEW) ---
-                    val currentUserAnswers = listOfNotNull(currentUser?.q1, currentUser?.q2, currentUser?.q3, currentUser?.q4, currentUser?.q5, currentUser?.q6, currentUser?.q7, currentUser?.q8, currentUser?.q9, currentUser?.q10)
-                    
-                    if (currentUser?.q1 == "Harambes Tod") badges.add("justice_for_harambe")
-                    if (currentUser?.q1 == "Timmys Strandung") badges.add("free_timmy")
-                    
-                    if (currentUser?.q4 == "Auf dem Mars" && currentUser?.q9 == "Girokonto") badges.add("galactic_finance")
-                    
-                    if (currentUserAnswers.size == 10) {
-                        val aOptions = setOf("Harambes Tod", "Rot", "Saturn", "Auf dem Mars", "Am Strand", "Ein Jedi", "10 cm groß", "Eine Palme", "Girokonto", "Dienstag")
-                        val aCount = currentUserAnswers.count { it in aOptions }
-                        if (aCount == 5) badges.add("true_neutral")
-                    }
-
-                    if (currentUser?.q10 == "Dienstag" || currentUser?.q10 == "Donnerstag") badges.add("synesthesia")
-
-                    if (members.isNotEmpty()) {
-                        val firstQ10 = members.first().q10
-                        if (firstQ10 != null && members.all { it.q10 == firstQ10 } && members.size > 1) {
-                            badges.add("hive_mind_dada")
-                        }
-                    }
+                    val badges = if (currentUserData != null) {
+                        com.fiforum.services.BadgeService.calculateBadges(currentUserData, members, allUsersSorted, totalUsers)
+                    } else emptyList()
 
                     UserTeamResult.InTeam(teamRow[TeamsTable.name], members, missionText, emailAddr, color, badges, teamId, cooldownMs)
                 }
