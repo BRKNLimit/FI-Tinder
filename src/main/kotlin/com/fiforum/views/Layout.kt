@@ -221,11 +221,12 @@ fun HTML.layout(title: String, headContent: HEAD.() -> Unit = {}, content: FlowC
     body {
         div("glitch-overlay") {
             id = "glitchOverlay"
-            div("scanline")
-            div("glitch-text") { +"SYSTEM OVERLOAD" }
+            div("glitch-text") { +"MATCHING IN PROGRESS" }
+            div { style = "margin-top: 10px; font-size: 1.2rem; color: var(--text-secondary);"; +"WIR STELLEN DAS BESTE TEAM ZUSAMMEN" }
             div { style = "margin-top: 20px;"; +"REBOOTING CORE..." }
             div { id = "glitchStatus"; style = "margin-top: 10px;"; +"0%" }
         }
+
         content()
     }
 }
