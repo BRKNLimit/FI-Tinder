@@ -3,6 +3,16 @@ package com.fiforum.views
 import com.fiforum.models.UserData
 import kotlinx.html.*
 
+fun teamColorToRgb(hex: String): String {
+    val h = hex.removePrefix("#")
+    return try {
+        val r = h.substring(0, 2).toInt(16)
+        val g = h.substring(2, 4).toInt(16)
+        val b = h.substring(4, 6).toInt(16)
+        "$r, $g, $b"
+    } catch (e: Exception) { "255, 0, 0" }
+}
+
 fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, currentUserEmail: String, teamColor: String, badges: List<String> = emptyList(), teamId: Int, cooldownMs: Long) {
     val sortedMembers = members.sortedByDescending { it.email.lowercase() == currentUserEmail.lowercase() }
     val currentUser = sortedMembers.firstOrNull { it.email.lowercase() == currentUserEmail.lowercase() }
@@ -23,6 +33,14 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                     raw("""
                         :root {
                             --accent: $teamColor !important;
+                        }
+                        .badge {
+                            border-color: var(--accent) !important;
+                            color: var(--accent) !important;
+                        }
+                        .badge-matched {
+                            background: rgba(${teamColorToRgb(teamColor)}, 0.2) !important;
+                            font-weight: bold;
                         }
                         .badge-description {
                             font-family: 'VT323', monospace;
