@@ -160,7 +160,7 @@ object MatchingService {
                     )
                     else -> listOf(
                         "Welches Klischee über ITler oder BWLer erfüllt ihr zu 100 % und welches so gar nicht?",
-                        "Versucht in genau 2 Minuten herauszufinden, was ihr (abgeshen von eurem Arbeitgeber) als absolute Gemeinsamkeit habt.",
+                        "Versucht in genau 2 Minuten herauszufinden, was ihr (abgesehen von eurem Arbeitgeber) als absolute Gemeinsamkeit habt.",
                         "Wenn ihr eine neue Programmiersprache oder ein neues Framework erfinden müsstet, wie hieße es und was wäre das Killer-Feature?"
                     )
                 }.shuffled()
