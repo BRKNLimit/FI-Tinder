@@ -86,7 +86,7 @@ fun HTML.surveyPage(email: String) {
                         { q: "Welche Größe hättest du lieber?", a: "10 cm groß", b: "10 Meter groß" },
                         { q: "Wenn du ein Baum wärst...", a: "Eine Palme", b: "Eine Eiche" },
                         { q: "Wärst du lieber ein...", a: "Girokonto", b: "Kreditkarte" },
-                        { q: "Bist du von deiner Art her ein...", a: "Fahrrad", b: "Pedalo" }
+                        { q: "Was schmeckt besser?", a: "Dienstag", b: "Donnerstag" }
                     ];
 
                     let currentStep = 0;

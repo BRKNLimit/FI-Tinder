@@ -31,7 +31,7 @@ object AdminService {
             listOf("10 cm groß", "10 Meter groß"),
             listOf("Eine Palme", "Eine Eiche"),
             listOf("Girokonto", "Kreditkarte"),
-            listOf("Fahrrad", "Pedalo")
+            listOf("Dienstag", "Donnerstag")
         )
 
         transaction {
