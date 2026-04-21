@@ -102,12 +102,12 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                             height: 250px;
                         }
                         .grid-cell {
-                            border: 1px solid #444;
+                            border: 1px solid #444 !important;
                             display: flex;
                             align-items: center;
                             justify-content: center;
                             font-family: 'VT323', monospace;
-                            color: var(--accent);
+                            color: var(--accent) !important;
                             font-size: 0.75rem;
                             background: #111;
                             cursor: pointer;
