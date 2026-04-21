@@ -81,7 +81,6 @@ fun Route.userRoutes() {
                     val companies = members.map { it.company }.distinct()
                     if (companies.size == members.size && members.size > 1) badges.add("diversity_pro")
 
-                    val currentUser = members.find { it.email == emailAddr }
                     if (currentUser != null) {
                         var sharedCount = 0
                         members.forEach { m ->
