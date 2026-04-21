@@ -192,13 +192,6 @@ fun HTML.registrationPage(email: String, isLaunched: Boolean = false) {
                         option { +"Snacks" }
                     }
                 }
-
-                div("input-group") {
-                    label { 
-                        input(type = InputType.checkBox) { name = "allowVCardDownload"; checked = true; style = "width: auto; margin-right: 10px;" }
-                        +"Teamkollegen dürfen meine Kontaktdaten (VCard) herunterladen"
-                    }
-                }
                 
                 button(type = ButtonType.submit) { +"Registrieren" }
             }
