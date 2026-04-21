@@ -274,11 +274,15 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                                             span("badge") { style = "color: #026466; border-color: #026466;"; +"Xing" }
                                         }
                                     }
-                                    button(type = ButtonType.button) {
-                                        style = "width: auto; padding: 2px 10px; font-size: 0.7rem; margin-top: 5px;"
-                                        val uJson = """{ name: '${member.name}', company: '${member.company}', email: '${member.email}', phoneWork: '${member.phoneWork ?: ""}', phonePrivate: '${member.phonePrivate ?: ""}', address: '${member.address ?: ""}', zipCode: '${member.zipCode ?: ""}', linkedin: '${member.linkedinUrl ?: ""}' }"""
-                                        onClick = "downloadVCard($uJson)"
-                                        +"KONTAKT SPEICHERN (.VCF)"
+                                    if (member.allowVCardDownload) {
+                                        button(type = ButtonType.button) {
+                                            style = "width: auto; padding: 2px 10px; font-size: 0.7rem; margin-top: 5px;"
+                                            val uJson = """{ name: '${member.name}', company: '${member.company}', email: '${member.email}', phoneWork: '${member.phoneWork ?: ""}', phonePrivate: '${member.phonePrivate ?: ""}', address: '${member.address ?: ""}', zipCode: '${member.zipCode ?: ""}', linkedin: '${member.linkedinUrl ?: ""}' }"""
+                                            onClick = "downloadVCard($uJson)"
+                                            +"KONTAKT SPEICHERN (.VCF)"
+                                        }
+                                    } else {
+                                        p { style = "font-size: 0.6rem; color: var(--text-secondary); margin-top: 5px;"; +"KONTAKT-DOWNLOAD DEAKTIVIERT" }
                                     }
                                 }
                             }

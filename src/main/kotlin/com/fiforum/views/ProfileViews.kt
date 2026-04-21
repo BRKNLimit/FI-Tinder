@@ -81,6 +81,17 @@ fun HTML.profilePage(user: UserData) {
                     input(type = InputType.text) { name = "zipCode"; value = user.zipCode ?: "" }
                 }
 
+                div("input-group") {
+                    label { 
+                        input(type = InputType.checkBox) { 
+                            name = "allowVCardDownload"; 
+                            checked = user.allowVCardDownload; 
+                            style = "width: auto; margin-right: 10px;" 
+                        }
+                        +"Teamkollegen dürfen meine Kontaktdaten (VCard) herunterladen"
+                    }
+                }
+
                 button(type = ButtonType.submit) { +"Speichern & zurück zum Team" }
             }
             

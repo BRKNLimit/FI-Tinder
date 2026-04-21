@@ -37,6 +37,7 @@ object Users : Table("users") {
 
     // Badge tracking
     val hasDownloadedVCard = bool("hasDownloadedVCard").default(false)
+    val allowVCardDownload = bool("allowVCardDownload").default(true)
     
     override val primaryKey = PrimaryKey(email)
 }
@@ -61,7 +62,8 @@ fun ResultRow.toUserData() = UserData(
     address = this[Users.address],
     zipCode = this[Users.zipCode],
     joinedAt = this[Users.joinedAt].toString(),
-    hasDownloadedVCard = this.getOrNull(Users.hasDownloadedVCard) ?: false
+    hasDownloadedVCard = this.getOrNull(Users.hasDownloadedVCard) ?: false,
+    allowVCardDownload = this.getOrNull(Users.allowVCardDownload) ?: true
 )
 
 object TeamsTable : Table("teams") {
@@ -97,5 +99,6 @@ data class UserData(
     val address: String? = null,
     val zipCode: String? = null,
     val joinedAt: String? = null,
-    val hasDownloadedVCard: Boolean = false
+    val hasDownloadedVCard: Boolean = false,
+    val allowVCardDownload: Boolean = true
 )

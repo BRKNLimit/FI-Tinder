@@ -84,6 +84,7 @@ fun Route.mainRoutes() {
                 it[phoneWork] = params["phoneWork"]
                 it[address] = params["address"]
                 it[zipCode] = params["zipCode"]
+                it[allowVCardDownload] = params["allowVCardDownload"] == "on"
             }
         }
         call.respondRedirect("/myteam?email=$emailAddr")
@@ -112,6 +113,7 @@ fun Route.mainRoutes() {
                 it[phoneWork] = params["phoneWork"]
                 it[address] = params["address"]
                 it[zipCode] = params["zipCode"]
+                it[allowVCardDownload] = params["allowVCardDownload"] == "on"
             }
             
             if (MatchingService.isLaunched) {
