@@ -19,6 +19,7 @@ object AdminService {
     fun generateMockData(count: Int = 20) {
         val companies = listOf("Finanz Informatik", "FI-TS", "FI-SP", "Star Finanz", "inasys", "FINMAS")
         val names = listOf("Lars", "Marie", "Nils", "Svenja", "Christian", "Julia", "Thomas", "Sarah", "Michael", "Laura")
+        val batchId = Random.nextInt(1000, 9999)
         
         val questions = listOf(
             listOf("Harambes Tod", "Timmys Strandung"),
@@ -35,11 +36,11 @@ object AdminService {
 
         transaction {
             repeat(count) { i ->
-                val email = "test$i@example.com"
+                val email = "test_${batchId}_$i@example.com"
                 Users.insert {
                     it[Users.email] = email
                     it[passwordHash] = BCrypt.hashpw("password", BCrypt.gensalt())
-                    it[name] = "${names.random()} #$i"
+                    it[name] = "${names.random()} #$batchId-$i"
                     it[company] = companies.random()
                     it[q1] = questions[0].random()
                     it[q2] = questions[1].random()
