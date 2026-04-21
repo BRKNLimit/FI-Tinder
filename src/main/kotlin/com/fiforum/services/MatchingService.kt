@@ -1,8 +1,6 @@
 package com.fiforum.services
 
-import com.fiforum.models.TeamsTable
-import com.fiforum.models.UserData
-import com.fiforum.models.Users
+import com.fiforum.models.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.random.Random
@@ -87,15 +85,7 @@ object MatchingService {
         if (isLaunched) return
 
         transaction {
-            val allUsers = Users.selectAll().map {
-                UserData(
-                    it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
-                    it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
-                    it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
-                    it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode],
-                    it[Users.joinedAt].toString()
-                )
-            }
+            val allUsers = Users.selectAll().map { it.toUserData() }
 
             if (allUsers.isEmpty()) return@transaction
 
@@ -170,7 +160,7 @@ object MatchingService {
                     )
                     else -> listOf(
                         "Welches Klischee über ITler oder BWLer erfüllt ihr zu 100 % und welches so gar nicht?",
-                        "Versucht in genau 2 Minuten herauszufinden, was ihr (abgesehen von eurem Arbeitgeber) als absolute Gemeinsamkeit habt.",
+                        "Versucht in genau 2 Minuten herauszufinden, was ihr (abgeshen von eurem Arbeitgeber) als absolute Gemeinsamkeit habt.",
                         "Wenn ihr eine neue Programmiersprache oder ein neues Framework erfinden müsstet, wie hieße es und was wäre das Killer-Feature?"
                     )
                 }.shuffled()
@@ -297,15 +287,7 @@ object MatchingService {
             if (teams.isEmpty()) return@transaction null
 
             val candidateTeams = teams.map { tId ->
-                val members = Users.select { Users.teamId eq tId }.map {
-                    UserData(
-                        it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
-                        it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
-                        it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
-                        it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode],
-                        it[Users.joinedAt].toString()
-                    )
-                }
+                val members = Users.selectAll().where { Users.teamId eq tId }.map { it.toUserData() }
                 tId to members
             }
 

@@ -8,9 +8,7 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.websocket.*
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.time.Duration.Companion.seconds
 
@@ -33,7 +31,7 @@ fun Application.module() {
     transaction { SchemaUtils.createMissingTablesAndColumns(Users, TeamsTable) }
 
     transaction {
-        val assignedUsersCount = Users.select { Users.teamId.isNotNull() }.count()
+        val assignedUsersCount = Users.selectAll().where { Users.teamId.isNotNull() }.count()
         if (assignedUsersCount > 0) MatchingService.isLaunched = true
     }
 

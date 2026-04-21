@@ -1,6 +1,7 @@
 package com.fiforum.models
 
 import kotlinx.serialization.Serializable
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.datetime
 import java.time.LocalDateTime
@@ -39,6 +40,29 @@ object Users : Table("users") {
     
     override val primaryKey = PrimaryKey(email)
 }
+
+fun ResultRow.toUserData() = UserData(
+    email = this[Users.email],
+    name = this[Users.name],
+    company = this[Users.company],
+    hobby = this[Users.hobby],
+    techInterest = this[Users.techInterest],
+    travel = this[Users.travel],
+    workstyle = this[Users.workstyle],
+    coffeeTalk = this[Users.coffeeTalk],
+    afterWork = this[Users.afterWork],
+    popculture = this[Users.popculture],
+    fuel = this[Users.fuel],
+    linkedinUrl = this[Users.linkedinUrl],
+    xingUrl = this[Users.xingUrl],
+    profilePicture = this[Users.profilePicture],
+    phonePrivate = this[Users.phonePrivate],
+    phoneWork = this[Users.phoneWork],
+    address = this[Users.address],
+    zipCode = this[Users.zipCode],
+    joinedAt = this[Users.joinedAt].toString(),
+    hasDownloadedVCard = this.getOrNull(Users.hasDownloadedVCard) ?: false
+)
 
 object TeamsTable : Table("teams") {
     val id = integer("id").autoIncrement()

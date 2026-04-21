@@ -1,18 +1,15 @@
 package com.fiforum.routes
 
-import com.fiforum.models.UserData
-import com.fiforum.models.Users
+import com.fiforum.models.*
 import com.fiforum.services.MatchingService
-import com.fiforum.views.loginRegisterPage
-import com.fiforum.views.registrationPage
-import com.fiforum.views.profilePage
+import com.fiforum.views.*
 import io.ktor.server.application.*
 import io.ktor.server.html.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.mindrot.jbcrypt.BCrypt
@@ -33,7 +30,7 @@ fun Route.mainRoutes() {
         }
 
         val user = transaction {
-            Users.select { Users.email eq emailAddr }.singleOrNull()
+            Users.selectAll().where { Users.email eq emailAddr }.singleOrNull()
         }
 
         if (user == null) {
@@ -66,14 +63,7 @@ fun Route.mainRoutes() {
     get("/profile") {
         val emailAddr = call.parameters["email"] ?: return@get call.respondRedirect("/")
         val user = transaction {
-            Users.select { Users.email eq emailAddr }.singleOrNull()?.let {
-                UserData(
-                    it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
-                    it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
-                    it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
-                    it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode]
-                )
-            }
+            Users.selectAll().where { Users.email eq emailAddr }.singleOrNull()?.toUserData()
         }
         if (user == null) call.respondRedirect("/")
         else call.respondHtml { profilePage(user) }
@@ -125,26 +115,7 @@ fun Route.mainRoutes() {
             }
             
             if (MatchingService.isLaunched) {
-                val latecomer = UserData(
-                    emailAddr, 
-                    params["name"] ?: "Anonymous",
-                    params["company"] ?: "",
-                    params["hobby"] ?: "",
-                    params["techInterest"] ?: "",
-                    params["travel"] ?: "",
-                    params["workstyle"] ?: "",
-                    params["coffeeTalk"] ?: "",
-                    params["afterWork"] ?: "",
-                    "",
-                    params["fuel"] ?: "",
-                    params["linkedinUrl"],
-                    params["xingUrl"],
-                    params["profilePicture"],
-                    params["phonePrivate"],
-                    params["phoneWork"],
-                    params["address"],
-                    params["zipCode"]
-                )
+                val latecomer = Users.selectAll().where { Users.email eq emailAddr }.single().toUserData()
                 MatchingService.assignLatecomer(latecomer)
             }
         }

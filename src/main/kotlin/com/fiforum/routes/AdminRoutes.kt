@@ -1,8 +1,6 @@
 package com.fiforum.routes
 
-import com.fiforum.models.TeamsTable
-import com.fiforum.models.UserData
-import com.fiforum.models.Users
+import com.fiforum.models.*
 import com.fiforum.services.AdminService
 import com.fiforum.services.MatchingService
 import com.fiforum.views.adminDashboard
@@ -12,7 +10,6 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Route.adminRoutes() {
@@ -22,28 +19,12 @@ fun Route.adminRoutes() {
             val teamCount = TeamsTable.selectAll().count()
             val isLaunched = MatchingService.isLaunched
             
-            val allUsers = Users.selectAll().map {
-                UserData(
-                    it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
-                    it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
-                    it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
-                    it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode],
-                    it[Users.joinedAt].toString()
-                )
-            }
+            val allUsers = Users.selectAll().map { it.toUserData() }
 
             val teamsWithMembers = if (MatchingService.isLaunched) {
                 TeamsTable.selectAll().map { teamRow ->
                     val teamId = teamRow[TeamsTable.id]
-                    val members = Users.select { Users.teamId eq teamId }.map {
-                        UserData(
-                            it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
-                            it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
-                            it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
-                            it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode],
-                            it[Users.joinedAt].toString()
-                        )
-                    }
+                    val members = Users.selectAll().where { Users.teamId eq teamId }.map { it.toUserData() }
                     teamRow[TeamsTable.name] to members
                 }
             } else {

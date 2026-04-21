@@ -1,8 +1,6 @@
 package com.fiforum.routes
 
-import com.fiforum.models.TeamsTable
-import com.fiforum.models.UserData
-import com.fiforum.models.Users
+import com.fiforum.models.*
 import com.fiforum.services.MatchingService
 import com.fiforum.services.MatchingSocketService
 import com.fiforum.views.teamPage
@@ -22,7 +20,7 @@ fun Route.userRoutes() {
         val emailAddr = call.parameters["email"] ?: return@get call.respondRedirect("/")
         
         val result = transaction {
-            val userRow = Users.select { Users.email eq emailAddr }.singleOrNull()
+            val userRow = Users.selectAll().where { Users.email eq emailAddr }.singleOrNull()
 
             if (userRow == null) {
                 null
@@ -31,7 +29,7 @@ fun Route.userRoutes() {
                 if (teamId == null || !MatchingService.isLaunched) {
                     UserTeamResult.Waiting(userRow[Users.name], emailAddr)
                 } else {
-                    val teamRow = TeamsTable.select { TeamsTable.id eq teamId }.single()
+                    val teamRow = TeamsTable.selectAll().where { TeamsTable.id eq teamId }.single()
                     val index = teamRow[TeamsTable.currentMissionIndex]
                     val color = teamRow[TeamsTable.teamColor]
                     
@@ -50,16 +48,7 @@ fun Route.userRoutes() {
                         else -> teamRow[TeamsTable.mission3]
                     } ?: "Find your team!"
                     
-                    val members = Users.select { Users.teamId eq teamId }.map {
-                        UserData(
-                            it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
-                            it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
-                            it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
-                            it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode],
-                            it[Users.joinedAt].toString(),
-                            it[Users.hasDownloadedVCard]
-                        )
-                    }
+                    val members = Users.selectAll().where { Users.teamId eq teamId }.map { it.toUserData() }
 
                     // --- Badge Calculation ---
                     val badges = mutableListOf<String>()
@@ -104,7 +93,7 @@ fun Route.userRoutes() {
                     if (userRow[Users.hasDownloadedVCard]) badges.add("network_node")
 
                     val myCombo = "${userRow[Users.hobby]}|${userRow[Users.techInterest]}|${userRow[Users.travel]}"
-                    val otherCombos = Users.select { Users.email neq emailAddr }.map { 
+                    val otherCombos = Users.selectAll().where { Users.email neq emailAddr }.map { 
                         "${it[Users.hobby]}|${it[Users.techInterest]}|${it[Users.travel]}"
                     }
                     if (!otherCombos.contains(myCombo)) badges.add("unicorn")
@@ -126,10 +115,10 @@ fun Route.userRoutes() {
         val emailAddr = params["email"] ?: return@post call.respond(mapOf("status" to "error"))
         
         val teamId = transaction {
-            val user = Users.select { Users.email eq emailAddr }.singleOrNull()
+            val user = Users.selectAll().where { Users.email eq emailAddr }.singleOrNull()
             val tId = user?.get(Users.teamId)
             if (tId != null) {
-                val team = TeamsTable.select { TeamsTable.id eq tId }.single()
+                val team = TeamsTable.selectAll().where { TeamsTable.id eq tId }.single()
                 val lastClick = team[TeamsTable.lastTeamFindClick]
                 val canClick = lastClick == null || Duration.between(lastClick, LocalDateTime.now()).toMillis() > (3 * 60 * 1000)
                 
@@ -163,16 +152,7 @@ fun Route.userRoutes() {
 
     get("/api/waiting-users") {
         val users = transaction {
-            Users.select { Users.teamId.isNull() }.map {
-                UserData(
-                    it[Users.email], it[Users.name], it[Users.company], it[Users.hobby], it[Users.techInterest], 
-                    it[Users.travel], it[Users.workstyle], it[Users.coffeeTalk], it[Users.afterWork], it[Users.popculture], it[Users.fuel],
-                    it[Users.linkedinUrl], it[Users.xingUrl], it[Users.profilePicture],
-                    it[Users.phonePrivate], it[Users.phoneWork], it[Users.address], it[Users.zipCode],
-                    it[Users.joinedAt].toString(),
-                    it[Users.hasDownloadedVCard]
-                )
-            }
+            Users.selectAll().where { Users.teamId.isNull() }.map { it.toUserData() }
         }
         call.respond(users)
     }
