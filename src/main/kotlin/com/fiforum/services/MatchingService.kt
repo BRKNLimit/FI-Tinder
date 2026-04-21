@@ -29,7 +29,10 @@ object MatchingService {
         if (u1.q8 == u2.q8 && u1.q8 != null) score += 1
         if (u1.q9 == u2.q9 && u1.q9 != null) score += 1
         if (u1.q10 == u2.q10 && u1.q10 != null) score += 1
+        
+        // gleice firma is kacke also dicken abzug geben damit die nich zusammen kommen
         if (u1.company == u2.company && u1.company.isNotBlank()) score -= 100
+        
         return score
     }
 
@@ -61,6 +64,7 @@ object MatchingService {
             val allUsers = Users.selectAll().where { Users.q1.isNotNull() }.map { it.toUserData() }
             if (allUsers.isEmpty()) return@transaction
 
+            // erstma gruppen machen bevors richtig los geht mit dem optimieren
             var bestGlobalState = initialGrouping(allUsers)
             var bestGlobalScore = calculateGlobalScore(bestGlobalState)
 
@@ -74,6 +78,7 @@ object MatchingService {
                     val nextState = mutateState(currentState)
                     val nextScore = calculateGlobalScore(nextState)
                     val delta = nextScore - currentScore
+                    // falls das besser is dann nehm wir das direkt, sons mit bissl glück
                     if (delta > 0 || Random.nextDouble() < Math.exp(delta / temperature)) {
                         currentState = nextState
                         currentScore = nextScore
@@ -96,6 +101,7 @@ object MatchingService {
                 val top1 = sortedAnswers.getOrNull(0)?.key
                 val top2 = sortedAnswers.getOrNull(1)?.key
                 
+                // hier die beeden besten antworten für den namen nuzen
                 val teamName = generateCleverTeamName(top1, top2)
                 
                 val tId = TeamsTable.insert {
@@ -120,7 +126,6 @@ object MatchingService {
 
         val pair = if (t1 < t2) t1 to t2 else t2 to t1
         
-        // Comprehensive Mapping based on provided list
         val names = mapOf(
             Pair("Harambes Tod", "Timmys Strandung") to "Die vergessenen Schlagzeilen",
             Pair("Harambes Tod", "Rot") to "Wut im Gehege",
@@ -332,7 +337,7 @@ object MatchingService {
             Pair("Dienstag", "Donnerstag") to "Wochenmitte-Vakuum"
         )
 
-        // Try both permutations because map keys are fixed order Pair(A, B)
+        // hier beede richtungen checken damit der name auch wirlich passt
         return names[Pair(t1, t2)] ?: names[Pair(t2, t1)] ?: "Team $t1 & $t2"
     }
 

@@ -10,7 +10,7 @@ object BadgeService {
     fun calculateBadges(user: UserData, teamMembers: List<UserData>, allEmailsSortedByJoin: List<String>, totalUserCount: Long): List<String> {
         val badges = mutableListOf<String>()
 
-        // 1. Join Badges (Mutual Exclusive)
+        // schauen wer am schnelsten war für die alpha/beta badges
         if (user.isLatecomer) {
             badges.add("latecomer")
         } else {
@@ -25,7 +25,6 @@ object BadgeService {
             }
         }
 
-        // 2. Dadaist Badges (Existing)
         if (user.q1 == "Harambes Tod") badges.add("justice_for_harambe")
         if (user.q1 == "Timmys Strandung") badges.add("free_timmy")
         if (user.q4 == "Auf dem Mars" && user.q9 == "Girokonto") badges.add("galactic_finance")
@@ -34,12 +33,12 @@ object BadgeService {
         if (userAnswers.size == 10) {
             val aOptions = setOf("Harambes Tod", "Rot", "Saturn", "Auf dem Mars", "Am Strand", "Ein Jedi", "10 cm groß", "Eine Palme", "Girokonto", "Dienstag")
             val aCount = userAnswers.count { it in aOptions }
+            // genau halbe-halbe gemacht, der typ is voll neutral
             if (aCount == 5) badges.add("true_neutral")
         }
         
         if (user.q10 == "Dienstag" || user.q10 == "Donnerstag") badges.add("synesthesia")
 
-        // 3. New Dadaist Badges (The 8 requested)
         if (user.q4 == "Auf dem Mars" && user.q9 == "Kreditkarte") badges.add("mars_makler")
         if (user.q1 == "Timmys Strandung" && user.q5 == "Unter Wasser") badges.add("timmy_rescue")
         if (user.q7 == "10 cm groß" && user.q6 == "Ein Jedi") badges.add("bonsai_jedi")
@@ -49,7 +48,6 @@ object BadgeService {
         if (user.q1 == "Harambes Tod" && user.q7 == "10 Meter groß") badges.add("harambe_legacy")
         if (user.q10 == "Donnerstag" && user.q8 == "Eine Palme") badges.add("thursday_gourmet")
 
-        // 4. Team/Meta Badges
         if (teamMembers.size == 5) badges.add("full_house")
         
         val companies = teamMembers.map { it.company }.distinct()
@@ -57,12 +55,12 @@ object BadgeService {
 
         if (teamMembers.isNotEmpty()) {
             val firstQ10 = teamMembers.first().q10
+            // falls alle die gleice antwort bei q10 haben gibts den hive mind
             if (firstQ10 != null && teamMembers.all { it.q10 == firstQ10 } && teamMembers.size > 1) {
                 badges.add("hive_mind_dada")
             }
         }
 
-        // Synergy Master
         var maxShared = 0
         teamMembers.forEach { m ->
             if (m.email != user.email) {
@@ -73,6 +71,7 @@ object BadgeService {
         }
         if (maxShared > 4) badges.add("synergy_master")
 
-        return badges.distinct().take(10) // Limit to 10 display badges as per original design
+        // mehr als zehen badges passen eh nich auf die karte sons siehts kacke aus
+        return badges.distinct().take(10)
     }
 }

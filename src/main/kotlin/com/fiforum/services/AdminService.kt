@@ -11,7 +11,8 @@ object AdminService {
     fun resetAll() {
         transaction {
             TeamsTable.deleteAll()
-            Users.deleteAll() // Full reset including users
+            // hier allet löschen sons gibts chaos beim neustart
+            Users.deleteAll() 
             MatchingService.isLaunched = false
         }
     }
@@ -68,6 +69,7 @@ object AdminService {
                 .groupingBy { it }
                 .eachCount()
 
+            // die stats für das admin dashboard zusammenbaun
             mapOf(
                 "totalUsers" to totalUsers,
                 "totalTeams" to totalTeams,

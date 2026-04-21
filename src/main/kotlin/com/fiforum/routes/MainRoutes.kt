@@ -40,6 +40,7 @@ fun Route.mainRoutes() {
                     it[Users.company] = company
                 }
             }
+            // wenn registriert dann ab zum survey, brauchen ja die dada antworten
             call.respondRedirect("/survey?email=$emailAddr")
         }
     }
@@ -49,7 +50,7 @@ fun Route.mainRoutes() {
         val emailAddr = params["email"]?.lowercase()?.trim() ?: return@post call.respondRedirect("/")
         val password = params["password"] ?: ""
 
-        // Special Admin Login
+        // dat is für den admin login, nich vergessen
         if (emailAddr == "admin1234" && password == "Admin1234") {
             return@post call.respondRedirect("/admin")
         }
@@ -59,6 +60,7 @@ fun Route.mainRoutes() {
         }
 
         if (user != null && BCrypt.checkpw(password, user[Users.passwordHash])) {
+            // falls der survey noch nich fertig is da hin schicken
             if (user[Users.q1] == null) {
                 call.respondRedirect("/survey?email=$emailAddr")
             } else {
@@ -90,6 +92,7 @@ fun Route.mainRoutes() {
             }
             
             if (MatchingService.isLaunched) {
+                // falls wer spät kommt direkt ins team stecken
                 val latecomer = Users.selectAll().where { Users.email eq sub.email }.single().toUserData()
                 MatchingService.assignLatecomer(latecomer)
             }

@@ -49,13 +49,12 @@ fun Route.userRoutes() {
                     
                     val members = Users.selectAll().where { Users.teamId eq teamId }.map { it.toUserData() }
 
-                    // --- Badge Calculation via Service ---
                     val totalUsers = Users.selectAll().count()
                     val allUsersSorted = Users.selectAll().orderBy(Users.joinedAt to SortOrder.ASC).map { it[Users.email] }
                     
                     val currentUserData = members.find { it.email == emailAddr }
                     if (currentUserData != null) {
-                        // Apply join badges to all members for display
+                        // hier den join badge für alle in der liste sezen damit man das sieht
                         members.forEach { m ->
                             if (m.isLatecomer) m.joinBadge = "latecomer"
                             else {
@@ -72,6 +71,7 @@ fun Route.userRoutes() {
                         }
                     }
 
+                    // badges aus dem service holen, da is die ganze logik drin
                     val badges = if (currentUserData != null) {
                         com.fiforum.services.BadgeService.calculateBadges(currentUserData, members, allUsersSorted, totalUsers)
                     } else emptyList()
@@ -98,6 +98,7 @@ fun Route.userRoutes() {
             if (tId != null) {
                 val team = TeamsTable.selectAll().where { TeamsTable.id eq tId }.single()
                 val lastClick = team[TeamsTable.lastTeamFindClick]
+                // 3 minuten sperre sonst spammen die alle nur rum
                 val canClick = lastClick == null || Duration.between(lastClick, LocalDateTime.now()).toMillis() > (3 * 60 * 1000)
                 
                 if (canClick) {
