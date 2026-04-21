@@ -209,6 +209,15 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
             id = "teamFindOverlay"
             h1 { +"DEIN TEAM SUCHT DICH!" }
             div("team-find-timer") { id = "teamFindTimer"; +"30" }
+            div {
+                style = "margin-top: 40px; display: flex; flex-direction: column; gap: 10px;"
+                members.forEach { member ->
+                    div { 
+                        style = "font-size: 2rem; text-transform: uppercase;"
+                        +member.name 
+                    }
+                }
+            }
         }
 
         div("container") {
