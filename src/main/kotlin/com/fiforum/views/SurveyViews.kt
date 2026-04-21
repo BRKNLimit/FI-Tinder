@@ -23,25 +23,32 @@ fun HTML.surveyPage(email: String) {
                         cursor: pointer;
                         transition: background 0.3s;
                         font-family: 'VT323', monospace;
-                        font-size: 2.5rem;
+                        font-size: 2rem;
                         text-align: center;
                         padding: 20px;
                         text-transform: uppercase;
+                        -webkit-tap-highlight-color: transparent;
+                    }
+                    @media (min-width: 600px) {
+                        .survey-option { font-size: 3rem; }
                     }
                     .option-a { border-bottom: 1px solid #333; color: #fff; }
                     .option-b { border-top: 1px solid #333; color: #fff; }
-                    .option-a:hover, .option-b:hover { background: #111; }
+                    .option-a:active, .option-b:active { background: #222; }
                     
                     .question-center {
-                        padding: 40px 20px;
+                        padding: 30px 15px;
                         text-align: center;
                         font-family: 'VT323', monospace;
-                        font-size: 1.8rem;
+                        font-size: 1.5rem;
                         font-weight: bold;
                         background: #000;
                         z-index: 10;
                         border-top: 2px solid #fff;
                         border-bottom: 2px solid #fff;
+                    }
+                    @media (min-width: 600px) {
+                        .question-center { font-size: 2.2rem; padding: 40px 20px; }
                     }
                     .progress-bar {
                         position: fixed;

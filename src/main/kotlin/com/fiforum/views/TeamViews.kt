@@ -70,8 +70,9 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                         /* ID Card Styles */
                         .id-card-wrapper {
                             position: relative;
-                            width: 400px;
-                            margin: 20px auto;
+                            width: 100%;
+                            max-width: 400px;
+                            margin: 40px auto 20px auto;
                         }
                         .flip-btn {
                             position: absolute;
@@ -79,8 +80,8 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                             right: 0;
                             width: auto;
                             height: 25px;
-                            padding: 0 10px;
-                            font-size: 0.8rem;
+                            padding: 0 15px;
+                            font-size: 0.9rem;
                             background: transparent;
                             border: 1px solid #fff;
                             color: #fff;
@@ -88,14 +89,23 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                             line-height: 23px;
                             cursor: pointer;
                         }
-                        .flip-btn:hover {
-                            background: #fff;
-                            color: #000;
-                        }
                         .id-card-perspective {
                             perspective: 1000px;
                             width: 100%;
-                            height: 250px;
+                            aspect-ratio: 400 / 250;
+                            height: auto;
+                        }
+                        .grid-5x2 {
+                            display: grid;
+                            grid-template-columns: repeat(2, 1fr);
+                            grid-auto-rows: 1fr;
+                            width: 100%;
+                            height: 100%;
+                            border: 1px dotted #333;
+                            overflow-y: auto;
+                        }
+                        @media (min-width: 400px) {
+                            .grid-5x2 { grid-template-columns: repeat(5, 1fr); }
                         }
                         .grid-cell {
                             border: 1px solid #444 !important;
@@ -104,13 +114,14 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                             justify-content: center;
                             font-family: 'VT323', monospace;
                             color: var(--accent) !important;
-                            font-size: 0.75rem;
+                            font-size: 0.7rem;
                             background: #111;
                             cursor: pointer;
                             transition: all 0.2s;
-                            padding: 2px;
+                            padding: 5px;
                             text-align: center;
-                            line-height: 1;
+                            line-height: 1.1;
+                            min-height: 40px;
                         }
                         .grid-cell:hover {
                             background: #222;

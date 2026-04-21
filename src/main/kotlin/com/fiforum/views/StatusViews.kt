@@ -168,10 +168,10 @@ fun HTML.waitingPage(name: String, initialWaitingUsers: List<UserData>, email: S
     ) {
         div("container") {
             h1 { +"Hallo, $name" }
-            p { +"Verbindung zum Netzwerk hergestellt. Warte auf Matching-Signal..." }
+            p { style = "text-align: center;"; +"Verbindung zum Netzwerk hergestellt. Warte auf Matching-Signal..." }
             
             div("card") {
-                style = "position: relative; width: 350px; height: 350px; margin: 20px auto; overflow: hidden; background: #000; border: 1px solid #333;"
+                style = "position: relative; width: 100%; max-width: 350px; aspect-ratio: 1/1; margin: 20px auto; overflow: hidden; background: #000; border: 1px solid #333;"
                 canvas {
                     id = "connectionCanvas"
                     width = "350"; height = "350"
