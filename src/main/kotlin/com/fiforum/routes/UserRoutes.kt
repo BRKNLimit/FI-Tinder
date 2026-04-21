@@ -33,7 +33,6 @@ fun Route.userRoutes() {
                     val index = teamRow[TeamsTable.currentMissionIndex]
                     val color = teamRow[TeamsTable.teamColor]
                     
-                    // Cooldown calculation
                     val lastClick = teamRow[TeamsTable.lastTeamFindClick]
                     val cooldownMs = if (lastClick != null) {
                         val diff = Duration.between(lastClick, LocalDateTime.now()).toMillis()
@@ -50,7 +49,7 @@ fun Route.userRoutes() {
                     
                     val members = Users.selectAll().where { Users.teamId eq teamId }.map { it.toUserData() }
 
-                    // --- Joining Badge Calculation ---
+                    // --- Joining Badge Calculation (KEEP) ---
                     val totalUsers = Users.selectAll().count()
                     val allUsersSorted = Users.selectAll().orderBy(Users.joinedAt to SortOrder.ASC).map { it[Users.email] }
                     
@@ -70,39 +69,32 @@ fun Route.userRoutes() {
                         }
                     }
 
-                    // --- Current User Badges (for ID card) ---
                     val badges = mutableListOf<String>()
                     val currentUser = members.find { it.email == emailAddr }
                     currentUser?.joinBadge?.let { badges.add(it) }
-                    
-                    if (members.size == 5) badges.add("full_house")
-                    
-                    val companies = members.map { it.company }.distinct()
-                    if (companies.size == members.size && members.size > 1) badges.add("diversity_pro")
 
-                    if (currentUser != null) {
-                        val myAns = listOfNotNull(currentUser.q1, currentUser.q2, currentUser.q3, currentUser.q4, currentUser.q5, currentUser.q6, currentUser.q7, currentUser.q8, currentUser.q9, currentUser.q10)
-                        var sharedCount = 0
-                        members.forEach { m ->
-                            if (m.email != emailAddr) {
-                                val otherAns = listOfNotNull(m.q1, m.q2, m.q3, m.q4, m.q5, m.q6, m.q7, m.q8, m.q9, m.q10)
-                                val count = myAns.intersect(otherAns.toSet()).size
-                                if (count > sharedCount) sharedCount = count
-                            }
+                    // --- Dadaist Badges (NEW) ---
+                    val currentUserAnswers = listOfNotNull(currentUser?.q1, currentUser?.q2, currentUser?.q3, currentUser?.q4, currentUser?.q5, currentUser?.q6, currentUser?.q7, currentUser?.q8, currentUser?.q9, currentUser?.q10)
+                    
+                    if (currentUser?.q1 == "Harambes Tod") badges.add("justice_for_harambe")
+                    if (currentUser?.q1 == "Timmys Strandung") badges.add("free_timmy")
+                    
+                    if (currentUser?.q4 == "Auf dem Mars" && currentUser?.q9 == "Girokonto") badges.add("galactic_finance")
+                    
+                    if (currentUserAnswers.size == 10) {
+                        val aOptions = setOf("Harambes Tod", "Rot", "Saturn", "Auf dem Mars", "Am Strand", "Ein Jedi", "10 cm groß", "Eine Palme", "Girokonto", "Dienstag")
+                        val aCount = currentUserAnswers.count { it in aOptions }
+                        if (aCount == 5) badges.add("true_neutral")
+                    }
+
+                    if (currentUser?.q10 == "Dienstag" || currentUser?.q10 == "Donnerstag") badges.add("synesthesia")
+
+                    if (members.isNotEmpty()) {
+                        val firstQ10 = members.first().q10
+                        if (firstQ10 != null && members.all { it.q10 == firstQ10 } && members.size > 1) {
+                            badges.add("hive_mind_dada")
                         }
-                        if (sharedCount > 4) badges.add("synergy_master")
                     }
-
-                    if (userRow[Users.linkedinUrl]?.isNotBlank() == true && userRow[Users.name].isNotBlank()) {
-                         badges.add("social_butterfly")
-                    }
-                    if (userRow[Users.hasDownloadedVCard]) badges.add("network_node")
-
-                    val myCombo = "${userRow[Users.q1]}|${userRow[Users.q2]}|${userRow[Users.q3]}"
-                    val otherCombos = Users.selectAll().where { Users.email neq emailAddr }.map { 
-                        "${it[Users.q1]}|${it[Users.q2]}|${it[Users.q3]}"
-                    }
-                    if (!otherCombos.contains(myCombo)) badges.add("unicorn")
 
                     UserTeamResult.InTeam(teamRow[TeamsTable.name], members, missionText, emailAddr, color, badges, teamId, cooldownMs)
                 }

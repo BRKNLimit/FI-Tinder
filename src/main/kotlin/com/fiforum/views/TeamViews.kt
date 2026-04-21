@@ -169,13 +169,12 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                             'GAMMA 10': 'Last 10% - Gerade noch geschafft!',
                             'ACTIVE MEMBER': 'Community Mitglied.',
                             'LATECOMER': 'Late joining reward.',
-                            'SYNERGY MASTER': 'Du hast über 4 gemeinsame Antworten mit deinem Team. Das ist wahre Dada-Synergie!',
-                            'UNICORN': 'Deine Kombination an Antworten ist absolut einzigartig.',
-                            'SOCIAL BUTTERFLY': 'Dein Profil ist vorbildlich gepflegt.',
-                            'DIVERSITY PRO': 'Dein Team besteht aus Mitgliedern von lauter unterschiedlichen Firmen.',
-                            'HIVE MIND': 'Dein gesamtes Team hat oft das Gleiche gewählt. Ein Kollektiv!',
-                            'FULL HOUSE': 'Dein Team hat die maximale Größe von 5 Personen erreicht.',
-                            'NETWORK NODE': 'Du hast bereits die VCard eines Teamkollegen gespeichert.'
+                            'JUSTICE FOR HARAMBE': 'Du hast die kulturelle Wichtigkeit von Harambe erkannt. Dicks out!',
+                            'FREE TIMMY': 'Deine Solidarität mit Timmy am Strand ist unerschütterlich.',
+                            'GALACTIC FINANCE': 'Auf dem Mars mit einem Girokonto? Du bist bereit für die interplanetare Wirtschaft.',
+                            'THE TRUE NEUTRAL': 'Exakt 5 mal A und 5 mal B. Absolute Balance in allen Dingen.',
+                            'SYNESTHESIA': 'Du kannst Wochentage schmecken. Ein wahrer Dadaist!',
+                            'HIVE MIND DADA': 'Dein gesamtes Team ist sich einig, welcher Wochentage besser schmeckt. Gruselig!'
                         };
 
                         function toggleFlip() {
