@@ -23,12 +23,29 @@ fun HTML.adminDashboard(
                 }
                 div("card") {
                     h3 { +"CONTROLS" }
-                    if (!isLaunched) {
-                        form(action = "/admin/launch", method = FormMethod.post) {
-                            button(type = ButtonType.submit) { +"START MATCHING ENGINE" }
+                    div {
+                        style = "display: flex; flex-direction: column; gap: 10px;"
+                        
+                        if (!isLaunched) {
+                            form(action = "/admin/match", method = FormMethod.post) {
+                                button(type = ButtonType.submit) { +"START MATCHING ENGINE" }
+                            }
+                            form(action = "/admin/generate", method = FormMethod.post) {
+                                button(type = ButtonType.submit) { 
+                                    style = "background: #111; border-color: #666;"
+                                    +"GENERATE 20 MOCK USERS" 
+                                }
+                            }
+                        } else {
+                            p { +"Matching already completed." }
                         }
-                    } else {
-                        p { +"Matching already completed." }
+
+                        form(action = "/admin/reset", method = FormMethod.post) {
+                            button(type = ButtonType.submit) { 
+                                style = "background: #300; border-color: #f00; color: #f00; margin-top: 10px;"
+                                +"RESET DATABASE (DESTRUCTIVE)" 
+                            }
+                        }
                     }
                 }
             }

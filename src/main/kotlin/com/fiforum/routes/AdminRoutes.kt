@@ -39,6 +39,11 @@ fun Route.adminRoutes() {
         }
     }
 
+    post("/admin/generate") {
+        AdminService.generateMockData(20)
+        call.respondRedirect("/admin")
+    }
+
     post("/admin/match") {
         MatchingService.runBatchMatching()
         com.fiforum.services.MatchingSocketService.broadcastMatchingFinished()

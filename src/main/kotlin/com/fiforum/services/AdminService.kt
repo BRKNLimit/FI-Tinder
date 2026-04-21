@@ -3,18 +3,56 @@ package com.fiforum.services
 import com.fiforum.models.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.mindrot.jbcrypt.BCrypt
+import kotlin.random.Random
 
 object AdminService {
 
     fun resetAll() {
         transaction {
             TeamsTable.deleteAll()
-            Users.update {
-                it[teamId] = null
-                it[q1] = null; it[q2] = null; it[q3] = null; it[q4] = null; it[q5] = null
-                it[q6] = null; it[q7] = null; it[q8] = null; it[q9] = null; it[q10] = null
-            }
+            Users.deleteAll() // Full reset including users
             MatchingService.isLaunched = false
+        }
+    }
+
+    fun generateMockData(count: Int = 20) {
+        val companies = listOf("Finanz Informatik", "FI-TS", "FI-SP", "Star Finanz", "inasys", "FINMAS")
+        val names = listOf("Lars", "Marie", "Nils", "Svenja", "Christian", "Julia", "Thomas", "Sarah", "Michael", "Laura")
+        
+        val questions = listOf(
+            listOf("Harambes Tod", "Timmys Strandung"),
+            listOf("Rot", "Blau"),
+            listOf("Saturn", "Uranus"),
+            listOf("Auf dem Mars", "Auf dem Mond"),
+            listOf("Am Strand", "Unter Wasser"),
+            listOf("Ein Jedi", "Ein Sith"),
+            listOf("10 cm groß", "10 Meter groß"),
+            listOf("Eine Palme", "Eine Eiche"),
+            listOf("Girokonto", "Kreditkarte"),
+            listOf("Fahrrad", "Pedalo")
+        )
+
+        transaction {
+            repeat(count) { i ->
+                val email = "test$i@example.com"
+                Users.insert {
+                    it[Users.email] = email
+                    it[passwordHash] = BCrypt.hashpw("password", BCrypt.gensalt())
+                    it[name] = "${names.random()} #$i"
+                    it[company] = companies.random()
+                    it[q1] = questions[0].random()
+                    it[q2] = questions[1].random()
+                    it[q3] = questions[2].random()
+                    it[q4] = questions[3].random()
+                    it[q5] = questions[4].random()
+                    it[q6] = questions[5].random()
+                    it[q7] = questions[6].random()
+                    it[q8] = questions[7].random()
+                    it[q9] = questions[8].random()
+                    it[q10] = questions[9].random()
+                }
+            }
         }
     }
 
