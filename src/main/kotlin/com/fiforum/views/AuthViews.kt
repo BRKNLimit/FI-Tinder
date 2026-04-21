@@ -7,8 +7,20 @@ fun HTML.loginRegisterPage(error: String? = null) {
     layout("Access // Matchmaker") {
         div("container") {
             h1 { +"Matchmaker Access" }
-            p { +"Bitte gib deine Email und ein Passwort ein." }
-            p { style = "font-size: 0.8rem; color: var(--text-secondary);"; +"Falls du noch nicht registriert bist, wird ein neuer Account erstellt." }
+            
+            div("tabs") {
+                style = "display: flex; gap: 20px; margin-bottom: 30px; border-bottom: 1px solid #333;"
+                div("tab active") { 
+                    id = "regTab"; style = "padding: 10px; cursor: pointer; border-bottom: 2px solid #fff;"
+                    onClick = "showSection('register')"
+                    +"REGISTER" 
+                }
+                div("tab") { 
+                    id = "logTab"; style = "padding: 10px; cursor: pointer;"
+                    onClick = "showSection('login')"
+                    +"LOGIN" 
+                }
+            }
 
             if (error != null) {
                 div("card") {
@@ -17,38 +29,90 @@ fun HTML.loginRegisterPage(error: String? = null) {
                 }
             }
 
-            form(action = "/auth", method = FormMethod.post) {
-                div("input-group") {
-                    label { +"Email" }
-                    input(type = InputType.text) { name = "email"; required = true }
+            div {
+                id = "registerSection"
+                form(action = "/register", method = FormMethod.post) {
+                    div("input-group") {
+                        label { +"Email" }
+                        input(type = InputType.text) { name = "email"; required = true }
+                    }
+                    div("input-group") {
+                        label { +"Passwort" }
+                        input(type = InputType.password) { name = "password"; required = true }
+                    }
+                    div("input-group") {
+                        label { +"Vollständiger Name" }
+                        input(type = InputType.text) { name = "name"; required = true }
+                    }
+                    div("input-group") {
+                        label { +"Unternehmen / Organisation" }
+                        select {
+                            name = "company"; required = true
+                            option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
+                            option { +"Finanz Informatik" }
+                            option { +"FI-TS" }
+                            option { +"FI-SP" }
+                            option { +"Star Finanz" }
+                            option { +"inasys" }
+                            option { +"FINMAS" }
+                        }
+                    }
+                    button(type = ButtonType.submit) { +"Registrieren" }
                 }
-                div("input-group") {
-                    label { +"Passwort" }
-                    input(type = InputType.password) { name = "password"; required = true }
+            }
+
+            div {
+                id = "loginSection"; style = "display: none;"
+                form(action = "/login", method = FormMethod.post) {
+                    div("input-group") {
+                        label { +"Email" }
+                        input(type = InputType.text) { name = "email"; required = true }
+                    }
+                    div("input-group") {
+                        label { +"Passwort" }
+                        input(type = InputType.password) { name = "password"; required = true }
+                    }
+                    button(type = ButtonType.submit) { +"Login" }
                 }
-                button(type = ButtonType.submit) { +"Weiter" }
+            }
+
+            script {
+                unsafe {
+                    raw("""
+                        function showSection(type) {
+                            const regSec = document.getElementById('registerSection');
+                            const logSec = document.getElementById('loginSection');
+                            const regTab = document.getElementById('regTab');
+                            const logTab = document.getElementById('logTab');
+                            
+                            if (type === 'register') {
+                                regSec.style.display = 'block';
+                                logSec.style.display = 'none';
+                                regTab.style.borderBottom = '2px solid #fff';
+                                logTab.style.borderBottom = 'none';
+                            } else {
+                                regSec.style.display = 'none';
+                                logSec.style.display = 'block';
+                                regTab.style.borderBottom = 'none';
+                                logTab.style.borderBottom = '2px solid #fff';
+                            }
+                        }
+                    """)
+                }
             }
         }
     }
 }
 
 fun HTML.registrationPage(email: String, isLaunched: Boolean = false) {
+    // This is now replaced by the direct register on landing, 
+    // but we keep the structure for compatibility or specialized profile info
     layout("Information // Matchmaker") {
         div("container") {
-            h1 { +"Deine Infos" }
+            h1 { +"Profil Vervollständigen" }
             p { +"Eingeloggt als: "; b { +email } }
             
-            if (isLaunched) {
-                div("card") {
-                    style = "border-color: var(--accent); margin-bottom: 20px;"
-                    h3("accent-text") { +"Spätanmelder-Modus" }
-                    p { +"Das offizielle Matching ist beendet. Du wirst automatisch einem passenden Team zugewiesen." }
-                }
-            } else {
-                p { +"Tritt der Community bei und finde dein perfektes Team." }
-            }
-            
-            form(action = "/register", method = FormMethod.post) {
+            form(action = "/profile/update", method = FormMethod.post) {
                 input(type = InputType.hidden) { name = "email"; value = email }
                 
                 div("input-group") {
@@ -74,126 +138,8 @@ fun HTML.registrationPage(email: String, isLaunched: Boolean = false) {
                     label { +"LinkedIn URL (Optional)" }
                     input(type = InputType.text) { name = "linkedinUrl"; placeholder = "https://linkedin.com/in/..." }
                 }
-                div("input-group") {
-                    label { +"Xing URL (Optional)" }
-                    input(type = InputType.text) { name = "xingUrl"; placeholder = "https://xing.com/profile/..." }
-                }
-
-                div("input-group") {
-                    label { +"Vollständiger Name" }
-                    input(type = InputType.text) { name = "name"; required = true }
-                }
-                div("input-group") {
-                    label { +"Unternehmen / Organisation" }
-                    select {
-                        name = "company"; required = true
-                        option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
-                        option { +"Finanz Informatik" }
-                        option { +"FI-TS" }
-                        option { +"FI-SP" }
-                        option { +"Star Finanz" }
-                        option { +"inasys" }
-                        option { +"FINMAS" }
-                    }
-                }
-                div("input-group") {
-                    label { +"Hobby" }
-                    select {
-                        name = "hobby"; required = true
-                        option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
-                        option { +"Fußball" }; option { +"Wandern" }; option { +"Kochen" }; option { +"Gaming" }
-                        option { +"Lesen" }; option { +"Reisen" }; option { +"Fotografie" }; option { +"Musik" }
-                        option { +"Yoga" }; option { +"Malen" }; option { +"Gym / Fitness" }; option { +"Teamsport" }
-                    }
-                }
-                div("input-group") {
-                    label { +"Tech-Interesse" }
-                    select {
-                        name = "techInterest"; required = true
-                        option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
-                        option { +"Programmieren" }; option { +"AI" }; option { +"Cloud" }
-                        option { +"Cyber Security" }; option { +"BlockChain" }; option { +"Devops" }
-                        option { +"Data Science" }; option { +"FinTech" }; option { +"Agile/Scrum" }
-                        option { +"Business Intelligence" }; option { +"UX/UI Design" }; option { +"Projektmanagement" }; option { +"E-Commerce" }
-                    }
-                }
-                div("input-group") {
-                    label { +"Dein Reiseziel" }
-                    select { 
-                        name = "travel"; required = true
-                        option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
-                        option { +"Asien" }
-                        option { +"Nordamerika" }
-                        option { +"Südamerika" }
-                        option { +"Südeuropa" }
-                        option { +"Skandinavien" }
-                        option { +"Hauptsache warm" }
-                        option { +"Hauptsache Action" }
-                        option { +"Australien" }
-                        option { +"Afrika" }
-                        option { +"Städtetrip" }
-                        option { +"Roadtrip" }
-                        option { +"Balkonien" }
-                    }
-                }
-                div("input-group") {
-                    label { +"Ich arbeite am liebsten..." }
-                    select { 
-                        name = "workstyle"; required = true
-                        option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
-                        option { +"Remote" }
-                        option { +"im Office" }
-                        option { +"Hybrid" }
-                        option { +"möglichst früh" }
-                        option { +"möglichst spät" }
-                    }
-                }
-                div("input-group") {
-                    label { +"Gespräche an der Kaffeemaschine" }
-                    select {
-                        name = "coffeeTalk"; required = true
-                        option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
-                        option { +"Filme und Serien" }
-                        option { +"Tech Gossip" }
-                        option { +"Krypto und Finanzen" }
-                        option { +"Sportergebnisse" }
-                        option { +"Haustier und Alltag" }
-                        option { +"Urlaubspläne" }
-                        option { +"Gaming News" }
-                        option { +"Lokale Events" }
-                        option { +"Studium & Berufsschule" }
-                    }
-                }
-                div("input-group") {
-                    label { +"Mein perfektes After Work..." }
-                    select {
-                        name = "afterWork"; required = true
-                        option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
-                        option { +"Feierabendbier" }
-                        option { +"ab zum Sport" }
-                        option { +"ab auf die Couch" }
-                        option { +"Side Hustle" }
-                        option { +"Fancy kochen" }
-                        option { +"Freunde treffen" }
-                        option { +"Zocken" }
-                    }
-                }
-                div("input-group") {
-                    label { +"Mein Büro-Treibstoff..." }
-                    select {
-                        name = "fuel"; required = true
-                        option { value = ""; disabled = true; selected = true; +"Bitte wählen..." }
-                        option { +"Kaffee" }
-                        option { +"Energy Drinks" }
-                        option { +"Mate" }
-                        option { +"Spezi / Cola" }
-                        option { +"Tee" }
-                        option { +"Wasser (stay hydrated)" }
-                        option { +"Snacks" }
-                    }
-                }
                 
-                button(type = ButtonType.submit) { +"Registrieren" }
+                button(type = ButtonType.submit) { +"Speichern" }
             }
         }
     }

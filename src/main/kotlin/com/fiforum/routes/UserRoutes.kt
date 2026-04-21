@@ -76,23 +76,17 @@ fun Route.userRoutes() {
                     currentUser?.joinBadge?.let { badges.add(it) }
                     
                     if (members.size == 5) badges.add("full_house")
-                    val workstyles = members.map { it.workstyle }.distinct()
-                    if (workstyles.size == 1 && members.size > 1) badges.add("hive_mind")
+                    
                     val companies = members.map { it.company }.distinct()
                     if (companies.size == members.size && members.size > 1) badges.add("diversity_pro")
 
                     if (currentUser != null) {
+                        val myAns = listOfNotNull(currentUser.q1, currentUser.q2, currentUser.q3, currentUser.q4, currentUser.q5, currentUser.q6, currentUser.q7, currentUser.q8, currentUser.q9, currentUser.q10)
                         var sharedCount = 0
                         members.forEach { m ->
                             if (m.email != emailAddr) {
-                                var count = 0
-                                if (m.hobby == currentUser.hobby) count++
-                                if (m.techInterest == currentUser.techInterest) count++
-                                if (m.travel == currentUser.travel) count++
-                                if (m.workstyle == currentUser.workstyle) count++
-                                if (m.coffeeTalk == currentUser.coffeeTalk) count++
-                                if (m.afterWork == currentUser.afterWork) count++
-                                if (m.fuel == currentUser.fuel) count++
+                                val otherAns = listOfNotNull(m.q1, m.q2, m.q3, m.q4, m.q5, m.q6, m.q7, m.q8, m.q9, m.q10)
+                                val count = myAns.intersect(otherAns.toSet()).size
                                 if (count > sharedCount) sharedCount = count
                             }
                         }
@@ -104,9 +98,9 @@ fun Route.userRoutes() {
                     }
                     if (userRow[Users.hasDownloadedVCard]) badges.add("network_node")
 
-                    val myCombo = "${userRow[Users.hobby]}|${userRow[Users.techInterest]}|${userRow[Users.travel]}"
+                    val myCombo = "${userRow[Users.q1]}|${userRow[Users.q2]}|${userRow[Users.q3]}"
                     val otherCombos = Users.selectAll().where { Users.email neq emailAddr }.map { 
-                        "${it[Users.hobby]}|${it[Users.techInterest]}|${it[Users.travel]}"
+                        "${it[Users.q1]}|${it[Users.q2]}|${it[Users.q3]}"
                     }
                     if (!otherCombos.contains(myCombo)) badges.add("unicorn")
 

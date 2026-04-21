@@ -8,18 +8,43 @@ import io.ktor.server.html.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.mindrot.jbcrypt.BCrypt
+import kotlinx.serialization.Serializable
 
 fun Route.mainRoutes() {
     get("/") {
         call.respondHtml { loginRegisterPage() }
     }
 
-    post("/auth") {
+    post("/register") {
+        val params = call.receiveParameters()
+        val emailAddr = params["email"]?.lowercase()?.trim() ?: return@post call.respondRedirect("/")
+        val password = params["password"] ?: ""
+        val name = params["name"] ?: "Anonymous"
+        val company = params["company"] ?: ""
+
+        val existing = transaction {
+            Users.selectAll().where { Users.email eq emailAddr }.singleOrNull()
+        }
+
+        if (existing != null) {
+            call.respondHtml { loginRegisterPage("Email existiert bereits.") }
+        } else {
+            transaction {
+                Users.insert {
+                    it[email] = emailAddr
+                    it[passwordHash] = BCrypt.hashpw(password, BCrypt.gensalt())
+                    it[Users.name] = name
+                    it[Users.company] = company
+                }
+            }
+            call.respondRedirect("/survey?email=$emailAddr")
+        }
+    }
+
+    post("/login") {
         val params = call.receiveParameters()
         val emailAddr = params["email"]?.lowercase()?.trim() ?: return@post call.respondRedirect("/")
         val password = params["password"] ?: ""
@@ -33,31 +58,43 @@ fun Route.mainRoutes() {
             Users.selectAll().where { Users.email eq emailAddr }.singleOrNull()
         }
 
-        if (user == null) {
-            // New User: Create account with password hash
-            transaction {
-                Users.insert {
-                    it[email] = emailAddr
-                    it[passwordHash] = BCrypt.hashpw(password, BCrypt.gensalt())
-                }
-            }
-            call.respondHtml { registrationPage(emailAddr, MatchingService.isLaunched) }
-        } else {
-            // Existing User: Verify password
-            val hash = user[Users.passwordHash]
-            if (BCrypt.checkpw(password, hash)) {
-                // Login successful
-                if (user[Users.name].isBlank()) {
-                    // Authenticated but info missing
-                    call.respondHtml { registrationPage(emailAddr, MatchingService.isLaunched) }
-                } else {
-                    // Fully registered
-                    call.respondRedirect("/myteam?email=$emailAddr")
-                }
+        if (user != null && BCrypt.checkpw(password, user[Users.passwordHash])) {
+            if (user[Users.q1] == null) {
+                call.respondRedirect("/survey?email=$emailAddr")
             } else {
-                call.respondHtml { loginRegisterPage("Ungültiges Passwort für diese Email.") }
+                call.respondRedirect("/myteam?email=$emailAddr")
+            }
+        } else {
+            call.respondHtml { loginRegisterPage("Ungültige Email oder Passwort.") }
+        }
+    }
+
+    get("/survey") {
+        val email = call.parameters["email"] ?: return@get call.respondRedirect("/")
+        call.respondHtml { surveyPage(email) }
+    }
+
+    @Serializable
+    data class SurveySubmission(
+        val email: String,
+        val q1: String, val q2: String, val q3: String, val q4: String, val q5: String,
+        val q6: String, val q7: String, val q8: String, val q9: String, val q10: String
+    )
+
+    post("/submit-survey") {
+        val sub = call.receive<SurveySubmission>()
+        transaction {
+            Users.update({ Users.email eq sub.email }) {
+                it[q1] = sub.q1; it[q2] = sub.q2; it[q3] = sub.q3; it[q4] = sub.q4; it[q5] = sub.q5
+                it[q6] = sub.q6; it[q7] = sub.q7; it[q8] = sub.q8; it[q9] = sub.q9; it[q10] = sub.q10
+            }
+            
+            if (MatchingService.isLaunched) {
+                val latecomer = Users.selectAll().where { Users.email eq sub.email }.single().toUserData()
+                MatchingService.assignLatecomer(latecomer)
             }
         }
+        call.respond(mapOf("status" to "ok"))
     }
 
     get("/profile") {
@@ -87,47 +124,6 @@ fun Route.mainRoutes() {
                 it[allowVCardDownload] = params["allowVCardDownload"] == "on"
             }
         }
-        call.respondRedirect("/myteam?email=$emailAddr")
-    }
-
-    post("/register") {
-        val params = call.receiveParameters()
-        val emailAddr = params["email"] ?: return@post call.respondRedirect("/")
-        
-        transaction {
-            Users.update({ Users.email eq emailAddr }) {
-                it[name] = params["name"] ?: "Anonymous"
-                it[company] = params["company"] ?: ""
-                it[hobby] = params["hobby"] ?: ""
-                it[techInterest] = params["techInterest"] ?: ""
-                it[travel] = params["travel"] ?: ""
-                it[workstyle] = params["workstyle"] ?: ""
-                it[coffeeTalk] = params["coffeeTalk"] ?: ""
-                it[afterWork] = params["afterWork"] ?: ""
-                it[popculture] = ""
-                it[fuel] = params["fuel"] ?: ""
-                it[linkedinUrl] = params["linkedinUrl"]
-                it[xingUrl] = params["xingUrl"]
-                it[profilePicture] = params["profilePicture"]
-                it[phonePrivate] = params["phonePrivate"]
-                it[phoneWork] = params["phoneWork"]
-                it[address] = params["address"]
-                it[zipCode] = params["zipCode"]
-                if (MatchingService.isLaunched) {
-                    it[isLatecomer] = true
-                }
-            }
-            
-            if (MatchingService.isLaunched) {
-                val latecomer = Users.selectAll().where { Users.email eq emailAddr }.single().toUserData()
-                MatchingService.assignLatecomer(latecomer)
-            }
-        }
-        call.respondRedirect("/myteam?email=$emailAddr")
-    }
-
-    post("/login") {
-        val emailAddr = call.receiveParameters()["email"] ?: ""
         call.respondRedirect("/myteam?email=$emailAddr")
     }
 }

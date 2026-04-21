@@ -7,24 +7,24 @@ import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.ints.shouldBeLessThan
 
 class MatchingTest : StringSpec({
-
-    "identical users with same company should have negative score due to massive penalty" {
-        val u1 = UserData("lars@example.com", "Lars", "Finanz Informatik", "Gaming", "Kotlin", "Asien", "... Remote", "Tech-Gossip", "Ab zum Sport", "Ja", "Kaffee")
-        val u2 = UserData("tester@example.com", "Tester", "Finanz Informatik", "Gaming", "Kotlin", "Asien", "... Remote", "Tech-Gossip", "Ab zum Sport", "Ja", "Kaffee")
+    "users from same company should have negative score" {
+        val u1 = UserData("u1@test.com", "User 1", "Company A", q1 = "A")
+        val u2 = UserData("u2@test.com", "User 2", "Company A", q1 = "A")
         
         val score = MatchingService.calculatePairScore(u1, u2)
-        println("Score for identical users same company: $score")
-        // New Weights: 10+10+5+5+5+5+5+5 = 50. Company penalty: -100. Total: -50.
+        println("Score for same company: $score")
         score shouldBeLessThan 0
     }
 
     "identical users with different company should have high positive score" {
-        val u1 = UserData("lars@example.com", "Lars", "Finanz Informatik", "Gaming", "Kotlin", "Asien", "... Remote", "Tech-Gossip", "Ab zum Sport", "Ja", "Kaffee")
-        val u2 = UserData("tester@example.com", "Tester", "Star Finanz", "Gaming", "Kotlin", "Asien", "... Remote", "Tech-Gossip", "Ab zum Sport", "Ja", "Kaffee")
+        val u1 = UserData("u1@test.com", "User 1", "Company A", 
+            q1="A", q2="A", q3="A", q4="A", q5="A", q6="A", q7="A", q8="A", q9="A", q10="A")
+        val u2 = UserData("u2@test.com", "User 2", "Company B", 
+            q1="A", q2="A", q3="A", q4="A", q5="A", q6="A", q7="A", q8="A", q9="A", q10="A")
         
         val score = MatchingService.calculatePairScore(u1, u2)
         println("Score for identical users different company: $score")
-        // Total max synergy: 50.
-        score shouldBeGreaterThan 40
+        // Total max synergy: 10.
+        score shouldBeGreaterThan 9
     }
 })

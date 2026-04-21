@@ -17,13 +17,9 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
     val sortedMembers = members.sortedByDescending { it.email.lowercase() == currentUserEmail.lowercase() }
     val currentUser = sortedMembers.firstOrNull { it.email.lowercase() == currentUserEmail.lowercase() }
 
-    val sharedHobby = members.groupingBy { it.hobby }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
-    val sharedTech = members.groupingBy { it.techInterest }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
-    val sharedTravel = members.groupingBy { it.travel }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
-    val sharedWork = members.groupingBy { it.workstyle }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
-    val sharedCoffee = members.groupingBy { it.coffeeTalk }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
-    val sharedAfter = members.groupingBy { it.afterWork }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
-    val sharedFuel = members.groupingBy { it.fuel }.eachCount().filter { it.key.isNotBlank() && it.value > 1 }.keys
+    // Calculate shared answers across the team for the badges
+    val allTeamAnswers = members.flatMap { listOfNotNull(it.q1, it.q2, it.q3, it.q4, it.q5, it.q6, it.q7, it.q8, it.q9, it.q10) }
+    val sharedAnswers = allTeamAnswers.groupingBy { it }.eachCount().filter { it.value > 1 }.keys
 
     layout(
         title = "Your Team // Matchmaker",
@@ -173,13 +169,13 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                             'GAMMA 10': 'Last 10% - Gerade noch geschafft!',
                             'ACTIVE MEMBER': 'Community Mitglied.',
                             'LATECOMER': 'Late joining reward.',
-                            'SYNERGY MASTER': 'Du hast über 4 gemeinsame Interessen mit deinem Team. Das ist wahre Synergie!',
-                            'UNICORN': 'Deine Kombination aus Hobby, Tech und Reisen ist einzigartig auf diesem Event.',
-                            'SOCIAL BUTTERFLY': 'Dein Profil ist vorbildlich! LinkedIn und Name sind vollständig gepflegt.',
+                            'SYNERGY MASTER': 'Du hast über 4 gemeinsame Antworten mit deinem Team. Das ist wahre Dada-Synergie!',
+                            'UNICORN': 'Deine Kombination an Antworten ist absolut einzigartig.',
+                            'SOCIAL BUTTERFLY': 'Dein Profil ist vorbildlich gepflegt.',
                             'DIVERSITY PRO': 'Dein Team besteht aus Mitgliedern von lauter unterschiedlichen Firmen.',
-                            'HIVE MIND': 'Dein gesamtes Team hat den exakt gleichen Workstyle gewählt. Ein Kollektiv!',
+                            'HIVE MIND': 'Dein gesamtes Team hat oft das Gleiche gewählt. Ein Kollektiv!',
                             'FULL HOUSE': 'Dein Team hat die maximale Größe von 5 Personen erreicht.',
-                            'NETWORK NODE': 'Du hast bereits die VCard eines Teamkollegen gespeichert. Networking läuft!'
+                            'NETWORK NODE': 'Du hast bereits die VCard eines Teamkollegen gespeichert.'
                         };
 
                         function toggleFlip() {
@@ -417,26 +413,8 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                         }
                         div {
                             style = "margin-top: 15px;"
-                            if (member.hobby.isNotBlank()) {
-                                span("badge ${if (sharedHobby.contains(member.hobby)) "badge-matched" else ""}") { +member.hobby }
-                            }
-                            if (member.techInterest.isNotBlank()) {
-                                span("badge ${if (sharedTech.contains(member.techInterest)) "badge-matched" else ""}") { +member.techInterest }
-                            }
-                            if (member.travel.isNotBlank()) {
-                                span("badge ${if (sharedTravel.contains(member.travel)) "badge-matched" else ""}") { +member.travel }
-                            }
-                            if (member.workstyle.isNotBlank()) {
-                                span("badge ${if (sharedWork.contains(member.workstyle)) "badge-matched" else ""}") { +member.workstyle }
-                            }
-                            if (member.coffeeTalk.isNotBlank()) {
-                                span("badge ${if (sharedCoffee.contains(member.coffeeTalk)) "badge-matched" else ""}") { +member.coffeeTalk }
-                            }
-                            if (member.afterWork.isNotBlank()) {
-                                span("badge ${if (sharedAfter.contains(member.afterWork)) "badge-matched" else ""}") { +member.afterWork }
-                            }
-                            if (member.fuel.isNotBlank()) {
-                                span("badge ${if (sharedFuel.contains(member.fuel)) "badge-matched" else ""}") { +member.fuel }
+                            listOfNotNull(member.q1, member.q2, member.q3, member.q4, member.q5, member.q6, member.q7, member.q8, member.q9, member.q10).forEach { ans ->
+                                span("badge ${if (sharedAnswers.contains(ans)) "badge-matched" else ""}") { +ans }
                             }
                         }
                     }
