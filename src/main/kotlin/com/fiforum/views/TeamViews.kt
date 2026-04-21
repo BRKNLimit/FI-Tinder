@@ -32,10 +32,6 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                             min-height: 1.2rem;
                             text-transform: uppercase;
                         }
-                        .grid-cell:hover {
-                            background: rgba(255, 255, 255, 0.05);
-                            color: #fff !important;
-                        }
                         .team-find-overlay {
                             position: fixed;
                             top: 0; left: 0; width: 100%; height: 100%;
@@ -56,6 +52,96 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                             color: #666 !important;
                             cursor: not-allowed;
                         }
+
+                        /* ID Card Styles */
+                        .id-card-wrapper {
+                            position: relative;
+                            width: 400px;
+                            margin: 20px auto;
+                        }
+                        .flip-btn {
+                            position: absolute;
+                            top: -35px;
+                            right: 0;
+                            width: auto;
+                            height: 25px;
+                            padding: 0 10px;
+                            font-size: 0.8rem;
+                            background: transparent;
+                            border: 1px solid #fff;
+                            color: #fff;
+                            margin: 0;
+                            line-height: 23px;
+                            cursor: pointer;
+                        }
+                        .flip-btn:hover {
+                            background: #fff;
+                            color: #000;
+                        }
+                        .id-card-perspective {
+                            perspective: 1000px;
+                            width: 100%;
+                            height: 250px;
+                        }
+                        .grid-cell {
+                            border: 1px solid #444;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-family: 'VT323', monospace;
+                            color: var(--accent);
+                            font-size: 0.75rem;
+                            background: #111;
+                            cursor: pointer;
+                            transition: all 0.2s;
+                            padding: 2px;
+                            text-align: center;
+                            line-height: 1;
+                        }
+                        .grid-cell:hover {
+                            background: #222;
+                            border-color: #fff;
+                        }
+
+                        /* Nothing OS Popup */
+                        .nothing-popup {
+                            position: fixed;
+                            top: 0; left: 0; width: 100%; height: 100%;
+                            background: rgba(0,0,0,0.85);
+                            backdrop-filter: blur(5px);
+                            z-index: 20000;
+                            display: none;
+                            align-items: center;
+                            justify-content: center;
+                        }
+                        .nothing-popup-content {
+                            background: #000;
+                            border: 2px solid #fff;
+                            padding: 40px;
+                            max-width: 400px;
+                            width: 90%;
+                            text-align: center;
+                            position: relative;
+                        }
+                        .nothing-popup-title {
+                            font-family: 'VT323', monospace;
+                            font-size: 2.5rem;
+                            color: var(--accent);
+                            margin-bottom: 20px;
+                            text-transform: uppercase;
+                        }
+                        .nothing-popup-text {
+                            font-size: 1.1rem;
+                            line-height: 1.4;
+                            color: #fff;
+                        }
+                        .nothing-popup-close {
+                            margin-top: 30px;
+                            border: 1px solid #fff;
+                            background: transparent;
+                            color: #fff;
+                            font-family: 'VT323', monospace;
+                        }
                     """)
                 }
             }
@@ -66,23 +152,32 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                         const badgeInfo = {
                             'ALPHA 10': 'Top 10% Early Bird - Einer der Ersten!',
                             'BETA 50': 'Top 50% Explorer - Früh dabei.',
+                            'GAMMA 10': 'Last 10% - Gerade noch geschafft!',
+                            'ACTIVE MEMBER': 'Community Mitglied.',
                             'LATECOMER': 'Late joining reward.',
-                            'SYNERGY MASTER': '>4 gemeinsame Interessen im Team.',
-                            'UNICORN': 'Einzigartige Interessen-Kombi im Event.',
-                            'SOCIAL BUTTERFLY': 'Profil vollständig mit LinkedIn & Bio.',
-                            'DIVERSITY PRO': 'Team-Mix aus lauter versch. Firmen.',
-                            'HIVE MIND': 'Gleicher Workstyle im ganzen Team.',
-                            'FULL HOUSE': 'Perfekte Teamgröße von 5 Personen.',
-                            'NETWORK NODE': 'VCard eines Kollegen gespeichert.'
+                            'SYNERGY MASTER': 'Du hast über 4 gemeinsame Interessen mit deinem Team. Das ist wahre Synergie!',
+                            'UNICORN': 'Deine Kombination aus Hobby, Tech und Reisen ist einzigartig auf diesem Event.',
+                            'SOCIAL BUTTERFLY': 'Dein Profil ist vorbildlich! LinkedIn und Name sind vollständig gepflegt.',
+                            'DIVERSITY PRO': 'Dein Team besteht aus Mitgliedern von lauter unterschiedlichen Firmen.',
+                            'HIVE MIND': 'Dein gesamtes Team hat den exakt gleichen Workstyle gewählt. Ein Kollektiv!',
+                            'FULL HOUSE': 'Dein Team hat die maximale Größe von 5 Personen erreicht.',
+                            'NETWORK NODE': 'Du hast bereits die VCard eines Teamkollegen gespeichert. Networking läuft!'
                         };
 
-                        function showBadgeDesc(name) {
-                            const desc = badgeInfo[name] || "";
-                            document.getElementById('badgeDescText').innerText = desc;
+                        function toggleFlip() {
+                            document.getElementById('idCardPerspective').classList.toggle('flipped');
                         }
 
-                        function clearBadgeDesc() {
-                            document.getElementById('badgeDescText').innerText = "";
+                        function openBadgePopup(name) {
+                            const title = name.replace(/_/g, ' ').toUpperCase();
+                            const desc = badgeInfo[title] || "Ein besonderes Achievement.";
+                            document.getElementById('popupTitle').innerText = title;
+                            document.getElementById('popupText').innerText = desc;
+                            document.getElementById('nothingPopup').style.display = 'flex';
+                        }
+
+                        function closeBadgePopup() {
+                            document.getElementById('nothingPopup').style.display = 'none';
                         }
 
                         function setupTeamWebSocket() {
@@ -334,37 +429,41 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
             
             div("card") {
                 style = "border: 1px solid #333; margin-top: 20px; text-align: center; border-style: none;"
-                h3 { +"DIGITAL_ID_CARD (CLICK TO FLIP)" }
+                h3 { +"DIGITAL_ID_CARD" }
                 
-                div("id-card-perspective") {
-                    id = "idCardPerspective"
-                    onClick = "this.classList.toggle('flipped')"
-                    div("id-card-inner") {
-                        div("id-card-front") {
-                            canvas {
-                                id = "idCardCanvas"
-                                width = "400"; height = "250"
-                                style = "width: 100%; height: 100%;"
+                div("id-card-wrapper") {
+                    button(type = ButtonType.button) {
+                        classes = setOf("flip-btn")
+                        onClick = "toggleFlip()"
+                        +"FLIP"
+                    }
+                    div("id-card-perspective") {
+                        id = "idCardPerspective"
+                        div("id-card-inner") {
+                            div("id-card-front") {
+                                canvas {
+                                    id = "idCardCanvas"
+                                    width = "400"; height = "250"
+                                    style = "width: 100%; height: 100%;"
+                                }
                             }
-                        }
-                        div("id-card-back") {
-                            div("grid-5x2") {
-                                badges.take(10).forEach { b ->
-                                    val bName = b.replace('_', ' ').uppercase()
-                                    div("grid-cell") { 
-                                        style = "color: var(--accent); font-weight: bold; font-size: 0.6rem;"
-                                        onMouseOver = "showBadgeDesc('$bName')"
-                                        onMouseOut = "clearBadgeDesc()"
-                                        +bName
+                            div("id-card-back") {
+                                div("grid-5x2") {
+                                    badges.take(10).forEach { b ->
+                                        val bName = b.replace('_', ' ').uppercase()
+                                        div("grid-cell") { 
+                                            onClick = "openBadgePopup('$bName')"
+                                            +bName
+                                        }
+                                    }
+                                    repeat(10 - badges.size) {
+                                        div("grid-cell") { +"." }
                                     }
                                 }
-                                repeat(10 - badges.size) {
-                                    div("grid-cell") { +"." }
+                                div("badge-description") {
+                                    id = "badgeDescText"
+                                    +"Click a badge for details"
                                 }
-                            }
-                            div("badge-description") {
-                                id = "badgeDescText"
-                                +"Halt die Maus über ein Badge!"
                             }
                         }
                     }
@@ -376,11 +475,26 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                 }
             }
 
+            /* Nothing OS Popup Element */
+            div("nothing-popup") {
+                id = "nothingPopup"
+                div("nothing-popup-content") {
+                    div("nothing-popup-title") { id = "popupTitle" }
+                    div("nothing-popup-text") { id = "popupText" }
+                    button(type = ButtonType.button) {
+                        classes = setOf("nothing-popup-close")
+                        onClick = "closeBadgePopup()"
+                        +"CLOSE"
+                    }
+                }
+            }
+
             script {
                 unsafe {
                     raw("""
                         function generateIDCard() {
                             const canvas = document.getElementById('idCardCanvas');
+                            if(!canvas) return;
                             const ctx = canvas.getContext('2d');
                             const user = ${currentUser?.let { "{ name: '${it.name}', company: '${it.company}', team: '$teamName', pic: '${it.profilePicture ?: ""}', email: '${it.email}', phoneWork: '${it.phoneWork ?: ""}', phonePrivate: '${it.phonePrivate ?: ""}', address: '${it.address ?: ""}', zipCode: '${it.zipCode ?: ""}', linkedin: '${it.linkedinUrl ?: ""}' }" } ?: "null"};
                             
