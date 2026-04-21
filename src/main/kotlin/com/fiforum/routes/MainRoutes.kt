@@ -113,6 +113,9 @@ fun Route.mainRoutes() {
                 it[phoneWork] = params["phoneWork"]
                 it[address] = params["address"]
                 it[zipCode] = params["zipCode"]
+                if (MatchingService.isLaunched) {
+                    it[isLatecomer] = true
+                }
             }
             
             if (MatchingService.isLaunched) {

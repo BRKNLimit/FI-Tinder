@@ -50,17 +50,30 @@ fun Route.userRoutes() {
                     
                     val members = Users.selectAll().where { Users.teamId eq teamId }.map { it.toUserData() }
 
-                    // --- Badge Calculation ---
-                    val badges = mutableListOf<String>()
+                    // --- Joining Badge Calculation ---
                     val totalUsers = Users.selectAll().count()
                     val allUsersSorted = Users.selectAll().orderBy(Users.joinedAt to SortOrder.ASC).map { it[Users.email] }
-                    val userRank = allUsersSorted.indexOf(emailAddr) + 1
                     
-                    if (userRank <= totalUsers * 0.1 && totalUsers > 0) {
-                        badges.add("alpha_10")
-                    } else if (userRank <= totalUsers * 0.5 && totalUsers > 0) {
-                        badges.add("beta_50")
+                    members.forEach { m ->
+                        if (m.isLatecomer) {
+                            m.joinBadge = "latecomer"
+                        } else {
+                            val userRank = allUsersSorted.indexOf(m.email) + 1
+                            if (totalUsers > 0) {
+                                m.joinBadge = when {
+                                    userRank <= totalUsers * 0.1 -> "alpha_10"
+                                    userRank <= totalUsers * 0.5 -> "beta_50"
+                                    userRank > totalUsers * 0.9 -> "gamma_10"
+                                    else -> "active_member"
+                                }
+                            }
+                        }
                     }
+
+                    // --- Current User Badges (for ID card) ---
+                    val badges = mutableListOf<String>()
+                    val currentUser = members.find { it.email == emailAddr }
+                    currentUser?.joinBadge?.let { badges.add(it) }
                     
                     if (members.size == 5) badges.add("full_house")
                     val workstyles = members.map { it.workstyle }.distinct()

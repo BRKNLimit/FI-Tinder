@@ -265,6 +265,12 @@ fun HTML.teamPage(teamName: String, members: List<UserData>, mission: String, cu
                                 h3 { 
                                     style = "margin-top: 0;"
                                     +member.name
+                                    member.joinBadge?.let { jb ->
+                                        span("badge") { 
+                                            style = "font-size: 0.6rem; margin-left: 10px; vertical-align: middle; border-color: var(--accent); color: var(--accent);"
+                                            +jb.replace('_', ' ').uppercase() 
+                                        }
+                                    }
                                     if (member.email.lowercase() == currentUserEmail.lowercase()) {
                                         span { style = "color: var(--accent); font-size: 0.8rem; margin-left: 10px;"; +"(DU)" }
                                     }
