@@ -89,7 +89,13 @@ fun HTML.waitingPage(name: String, initialWaitingUsers: List<UserData>, email: S
                         function setupWebSocket() {
                             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
                             const ws = new WebSocket(protocol + '//' + window.location.host + '/matching-ws');
-                            ws.onmessage = (event) => { if (event.data === 'MATCHING_FINISHED') triggerGlitchReveal(); };
+                            ws.onmessage = (event) => { 
+                                if (event.data === 'MATCHING_STARTED') {
+                                    document.getElementById('glitchOverlay').style.display = 'flex';
+                                } else if (event.data === 'MATCHING_FINISHED') {
+                                    triggerGlitchReveal(); 
+                                }
+                            };
                             ws.onclose = () => { setTimeout(setupWebSocket, 2000); };
                         }
 

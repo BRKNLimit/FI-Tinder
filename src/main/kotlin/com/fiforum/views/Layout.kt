@@ -107,7 +107,45 @@ fun HTML.layout(title: String, headContent: HEAD.() -> Unit = {}, content: FlowC
                         margin-right: 5px;
                         margin-bottom: 5px;
                     }
-                    /* ... (rest of styles) */
+                    
+                    /* Glitch Overlay */
+                    .glitch-overlay {
+                        position: fixed;
+                        top: 0; left: 0; width: 100%; height: 100%;
+                        background: #000;
+                        z-index: 9999;
+                        display: none;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        color: var(--accent);
+                        font-family: 'VT323', monospace;
+                        text-align: center;
+                    }
+                    .glitch-text {
+                        font-size: 3rem;
+                        text-transform: uppercase;
+                        animation: glitch 0.2s infinite;
+                    }
+                    @keyframes glitch {
+                        0% { transform: translate(0); text-shadow: -2px 0 red, 2px 0 blue; }
+                        20% { transform: translate(-2px, 2px); }
+                        40% { transform: translate(-2px, -2px); }
+                        60% { transform: translate(2px, 2px); }
+                        80% { transform: translate(2px, -2px); }
+                        100% { transform: translate(0); }
+                    }
+                    .scanline {
+                        width: 100%; height: 100px;
+                        background: linear-gradient(rgba(255,0,0,0.1), transparent);
+                        position: absolute;
+                        top: -100px;
+                        animation: scanline 2s linear infinite;
+                    }
+                    @keyframes scanline {
+                        0% { top: -100px; }
+                        100% { top: 100%; }
+                    }
                 """)
             }
         }

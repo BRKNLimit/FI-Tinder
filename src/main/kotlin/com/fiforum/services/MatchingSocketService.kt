@@ -29,6 +29,14 @@ object MatchingSocketService {
         }
     }
 
+    suspend fun broadcastMatchingStarted() {
+        sessions.forEach { session ->
+            try {
+                session.send(Frame.Text("MATCHING_STARTED"))
+            } catch (e: Exception) {}
+        }
+    }
+
     suspend fun broadcastNewMission() {
         sessions.forEach { session ->
             try {

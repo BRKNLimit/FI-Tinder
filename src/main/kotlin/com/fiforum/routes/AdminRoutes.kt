@@ -9,6 +9,8 @@ import io.ktor.server.html.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -45,8 +47,15 @@ fun Route.adminRoutes() {
     }
 
     post("/admin/match") {
-        MatchingService.runBatchMatching()
-        com.fiforum.services.MatchingSocketService.broadcastMatchingFinished()
+        val socketService = com.fiforum.services.MatchingSocketService
+        socketService.broadcastMatchingStarted()
+        
+        // Run in background to not block the redirect and allow WebSocket frames to be sent
+        kotlinx.coroutines.GlobalScope.launch {
+            MatchingService.runBatchMatching()
+            socketService.broadcastMatchingFinished()
+        }
+        
         call.respondRedirect("/admin")
     }
 

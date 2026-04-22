@@ -28,7 +28,10 @@ fun HTML.adminDashboard(
                         
                         if (!isLaunched) {
                             form(action = "/admin/match", method = FormMethod.post) {
-                                button(type = ButtonType.submit) { +"START MATCHING ENGINE" }
+                                button(type = ButtonType.submit) { 
+                                    onClick = "document.getElementById('glitchOverlay').style.display = 'flex';"
+                                    +"START MATCHING ENGINE" 
+                                }
                             }
                             form(action = "/admin/generate", method = FormMethod.post) {
                                 button(type = ButtonType.submit) { 
