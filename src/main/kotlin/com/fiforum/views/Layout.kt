@@ -73,6 +73,10 @@ fun HTML.layout(title: String, headContent: HEAD.() -> Unit = {}, content: FlowC
                         border-color: var(--accent);
                         outline: none;
                     }
+                    option {
+                        background-color: #111111;
+                        color: #ffffff;
+                    }
                     button {
                         background: var(--text-primary);
                         color: var(--bg-color);
